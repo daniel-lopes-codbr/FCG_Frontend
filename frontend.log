@@ -1,0 +1,18 @@
+
+> fcg-user-frontend@0.0.0 start
+> ng serve
+
+- Building...
+
+Initial chunk files | Names         |  Raw size
+polyfills.js        | polyfills     |  88.09 kB | 
+main.js             | main          |  59.29 kB | 
+styles.css          | styles        |  20.58 kB | 
+
+                    | Initial total | 167.96 kB
+
+Application bundle generation complete. [1.514 seconds]
+
+Watch mode enabled. Watching for file changes...
+  ➜  Local:   http://localhost:4200/
+  ➜  press h + enter to show help

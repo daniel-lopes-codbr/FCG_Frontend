@@ -1,0 +1,164 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex justify-between items-center">
+    <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+      {{ isEdit ? 'Edit User' : 'Create New User' }}
+    </h3>
+    <button
+      (click)="onCancel()"
+      class="btn-secondary flex items-center space-x-2"
+    >
+      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+      <span>Cancel</span>
+    </button>
+  </div>
+
+  <!-- Form -->
+  <div class="card p-6">
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- Name Field -->
+      <div>
+        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Full Name *
+        </label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          class="input-field"
+          placeholder="Enter full name"
+        />
+        <div *ngIf="userForm.get('name')?.invalid && userForm.get('name')?.touched" class="mt-1 text-sm text-red-600 dark:text-red-400">
+          {{ getErrorMessage('name') }}
+        </div>
+      </div>
+
+      <!-- Email Field -->
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Email Address *
+        </label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="input-field"
+          placeholder="Enter email address"
+        />
+        <div *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched" class="mt-1 text-sm text-red-600 dark:text-red-400">
+          {{ getErrorMessage('email') }}
+        </div>
+      </div>
+
+      <!-- Password Field (only for create) -->
+      <div *ngIf="!isEdit">
+        <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Password *
+        </label>
+        <div class="relative">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            class="input-field pr-10"
+            placeholder="Enter password"
+          />
+          <button
+            type="button"
+            (click)="togglePasswordVisibility()"
+            class="absolute inset-y-0 right-0 pr-3 flex items-center"
+          >
+            <svg *ngIf="!showPassword" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <svg *ngIf="showPassword" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+            </svg>
+          </button>
+        </div>
+        <div *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched" class="mt-1 text-sm text-red-600 dark:text-red-400">
+          {{ getErrorMessage('password') }}
+        </div>
+        <div *ngIf="getPasswordStrengthMessage()" class="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
+          {{ getPasswordStrengthMessage() }}
+        </div>
+      </div>
+
+      <!-- Confirm Password Field (only for create) -->
+      <div *ngIf="!isEdit">
+        <label for="confirmationPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Confirm Password *
+        </label>
+        <div class="relative">
+          <input
+            id="confirmationPassword"
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            formControlName="confirmationPassword"
+            class="input-field pr-10"
+            placeholder="Confirm password"
+          />
+          <button
+            type="button"
+            (click)="toggleConfirmPasswordVisibility()"
+            class="absolute inset-y-0 right-0 pr-3 flex items-center"
+          >
+            <svg *ngIf="!showConfirmPassword" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <svg *ngIf="showConfirmPassword" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+            </svg>
+          </button>
+        </div>
+        <div *ngIf="userForm.get('confirmationPassword')?.invalid && userForm.get('confirmationPassword')?.touched" class="mt-1 text-sm text-red-600 dark:text-red-400">
+          {{ getErrorMessage('confirmationPassword') }}
+        </div>
+        <div *ngIf="getPasswordMatchMessage()" class="mt-1 text-sm text-red-600 dark:text-red-400">
+          {{ getPasswordMatchMessage() }}
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+              Error
+            </h3>
+            <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+              {{ errorMessage }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end space-x-4">
+        <button
+          type="button"
+          (click)="onCancel()"
+          class="btn-secondary"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          [disabled]="userForm.invalid || isLoading"
+          class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+        >
+          <div *ngIf="isLoading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+          <span>{{ isEdit ? 'Update User' : 'Create User' }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,16 @@
+/* Game Form specific styles */
+textarea.input-field {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

@@ -1,0 +1,296 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-dark-900 dark:to-dark-800">
+  <!-- Header -->
+  <header class="bg-white dark:bg-dark-800 shadow-sm border-b border-gray-200 dark:border-dark-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Logo -->
+        <div class="flex items-center">
+          <h1 class="gaming-text text-2xl font-bold">FCG Games Marketplace</h1>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex items-center space-x-4">
+          <!-- Cart Button -->
+          <button
+            (click)="navigateToCart()"
+            class="btn-secondary flex items-center space-x-2 relative"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
+            </svg>
+            <span>Cart</span>
+            <!-- Cart Item Count Badge -->
+            <span *ngIf="getCartItemCount() > 0" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {{ getCartItemCount() }}
+            </span>
+          </button>
+
+          <!-- Dashboard Button -->
+          <button
+            (click)="navigateToDashboard()"
+            class="btn-secondary flex items-center space-x-2"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z" />
+            </svg>
+            <span>Dashboard</span>
+          </button>
+
+          <!-- Theme Toggle -->
+          <button
+            (click)="toggleTheme()"
+            class="btn-secondary flex items-center space-x-2"
+          >
+            <svg *ngIf="(darkMode$ | async)" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <svg *ngIf="!(darkMode$ | async)" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+            <span class="hidden sm:inline">{{ (darkMode$ | async) ? 'Light Mode' : 'Dark Mode' }}</span>
+          </button>
+
+          <!-- Logout Button -->
+          <button
+            (click)="logout()"
+            class="btn-primary flex items-center space-x-2"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Logout</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="px-4 py-6 sm:px-0">
+      <!-- Page Header -->
+      <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          🎮 Game Marketplace
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400">
+          Discover and purchase amazing games! Welcome back, {{ currentUser?.name || 'Gamer' }}!
+        </p>
+      </div>
+
+      <!-- Search and Filter Section -->
+      <div class="card p-6 mb-8">
+        <div class="flex flex-col lg:flex-row gap-4">
+          <!-- Search Input -->
+          <div class="flex-1">
+            <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Search Games
+            </label>
+            <input
+              id="search"
+              type="text"
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+              class="input-field"
+              placeholder="Search by title or description..."
+            />
+          </div>
+
+          <!-- Genre Filter -->
+          <div class="lg:w-48">
+            <label for="genre" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Filter by Genre
+            </label>
+            <select
+              id="genre"
+              [(ngModel)]="selectedGenre"
+              (change)="onGenreChange()"
+              class="input-field"
+            >
+              <option value="">All Genres</option>
+              <option *ngFor="let genre of genres" [value]="genre">{{ genre }}</option>
+            </select>
+          </div>
+
+          <!-- Clear Filters Button -->
+          <div class="lg:w-32 flex items-end">
+            <button
+              (click)="clearFilters()"
+              class="btn-secondary w-full"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="card p-8 text-center">
+        <div class="flex justify-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        </div>
+        <p class="mt-4 text-gray-600 dark:text-gray-400">Loading games...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+              Error Loading Games
+            </h3>
+            <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+              {{ errorMessage }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Games Section -->
+      <div *ngIf="!loading && newGames.length > 0" class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            🆕 New This Month
+          </h3>
+          <span class="text-sm text-gray-500 dark:text-gray-400">
+            {{ newGames.length }} game{{ newGames.length !== 1 ? 's' : '' }}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div *ngFor="let game of newGames" class="card overflow-hidden hover:shadow-lg transition-shadow duration-200">
+            <!-- Game Image -->
+            <div class="game-image-container bg-gray-200 dark:bg-dark-700">
+              <img
+                [src]="game.coverImageUrl"
+                [alt]="game.title"
+                (error)="onImageError($event)"
+              />
+            </div>
+
+            <!-- Game Info -->
+            <div class="p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ getGenreBadgeClass(game.genre) }}">
+                  {{ game.genre }}
+                </span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ formatDate(game.releaseDate) }}
+                </span>
+              </div>
+
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">
+                {{ game.title }}
+              </h4>
+
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                {{ game.description }}
+              </p>
+
+              <div class="flex items-center justify-between">
+                <span class="text-xl font-bold text-primary-600 dark:text-primary-400">
+                  {{ formatPrice(game.price) }}
+                </span>
+                <button
+                  (click)="onBuyGame(game)"
+                  [disabled]="isGameInCart(game.id)"
+                  [class]="isGameInCart(game.id) ? 'btn-secondary text-sm px-4 py-2 cursor-not-allowed' : 'btn-primary text-sm px-4 py-2'"
+                >
+                  {{ isGameInCart(game.id) ? 'In Cart' : 'Add to Cart' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other Games Section -->
+      <div *ngIf="!loading && otherGames.length > 0">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            🎮 All Games
+          </h3>
+          <span class="text-sm text-gray-500 dark:text-gray-400">
+            {{ otherGames.length }} game{{ otherGames.length !== 1 ? 's' : '' }}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div *ngFor="let game of otherGames" class="card overflow-hidden hover:shadow-lg transition-shadow duration-200">
+            <!-- Game Image -->
+            <div class="game-image-container bg-gray-200 dark:bg-dark-700">
+              <img
+                [src]="game.coverImageUrl"
+                [alt]="game.title"
+                (error)="onImageError($event)"
+              />
+            </div>
+
+            <!-- Game Info -->
+            <div class="p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ getGenreBadgeClass(game.genre) }}">
+                  {{ game.genre }}
+                </span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ formatDate(game.releaseDate) }}
+                </span>
+              </div>
+
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">
+                {{ game.title }}
+              </h4>
+
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                {{ game.description }}
+              </p>
+
+              <div class="flex items-center justify-between">
+                <span class="text-xl font-bold text-primary-600 dark:text-primary-400">
+                  {{ formatPrice(game.price) }}
+                </span>
+                <button
+                  (click)="onBuyGame(game)"
+                  [disabled]="isGameInCart(game.id)"
+                  [class]="isGameInCart(game.id) ? 'btn-secondary text-sm px-4 py-2 cursor-not-allowed' : 'btn-primary text-sm px-4 py-2'"
+                >
+                  {{ isGameInCart(game.id) ? 'In Cart' : 'Add to Cart' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && games.length === 0" class="card p-8 text-center">
+        <div class="max-w-md mx-auto">
+          <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            No Games Found
+          </h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4">
+            {{ searchTerm || selectedGenre ? 'Try adjusting your search or filters.' : 'Check back later for new games to be added to the marketplace!' }}
+          </p>
+          <button
+            *ngIf="searchTerm || selectedGenre"
+            (click)="clearFilters()"
+            class="btn-primary"
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
