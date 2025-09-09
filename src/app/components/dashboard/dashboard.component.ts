@@ -63,7 +63,6 @@ export class DashboardComponent implements OnInit {
   }
 
   navigateToCart(): void {
-    // TODO: Navigate to cart page (will be implemented in next step)
-    alert(`Cart has ${this.getCartItemCount()} item(s). Cart page coming in next step!`);
+    this.router.navigate(['/cart']);
   }
 }

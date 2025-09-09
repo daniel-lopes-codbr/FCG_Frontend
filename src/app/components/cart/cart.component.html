@@ -1,0 +1,211 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-dark-900 dark:to-dark-800">
+  <!-- Header -->
+  <header class="bg-white dark:bg-dark-800 shadow-sm border-b border-gray-200 dark:border-dark-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Logo -->
+        <div class="flex items-center">
+          <h1 class="gaming-text text-2xl font-bold">FCG Games Cart</h1>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex items-center space-x-4">
+          <!-- Dashboard Button -->
+          <button
+            (click)="navigateToDashboard()"
+            class="btn-secondary flex items-center space-x-2"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z" />
+            </svg>
+            <span>Dashboard</span>
+          </button>
+
+          <!-- Marketplace Button -->
+          <button
+            (click)="navigateToMarketplace()"
+            class="btn-primary flex items-center space-x-2"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+            <span>Marketplace</span>
+          </button>
+
+          <!-- Theme Toggle -->
+          <button
+            (click)="toggleTheme()"
+            class="btn-secondary flex items-center space-x-2"
+          >
+            <svg *ngIf="(darkMode$ | async)" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <svg *ngIf="!(darkMode$ | async)" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+            <span class="hidden sm:inline">{{ (darkMode$ | async) ? 'Light Mode' : 'Dark Mode' }}</span>
+          </button>
+
+          <!-- Logout Button -->
+          <button
+            (click)="logout()"
+            class="btn-primary flex items-center space-x-2"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Logout</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="px-4 py-6 sm:px-0">
+      <!-- Page Header -->
+      <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          🛒 Shopping Cart
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400">
+          Review your selected games and proceed to checkout
+        </p>
+      </div>
+
+      <!-- Cart Content -->
+      <div *ngIf="cartItems.length > 0" class="space-y-6">
+        <!-- Cart Items -->
+        <div class="card p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Cart Items ({{ cartItemCount }})
+            </h3>
+            <button
+              (click)="clearCart()"
+              class="btn-secondary text-sm"
+            >
+              Clear Cart
+            </button>
+          </div>
+
+          <!-- Cart Items List -->
+          <div class="space-y-4">
+            <div *ngFor="let item of cartItems" class="flex items-center space-x-4 p-4 border border-gray-200 dark:border-dark-700 rounded-lg">
+              <!-- Game Image -->
+              <div class="flex-shrink-0">
+                <div class="w-20 h-24 bg-gray-200 dark:bg-dark-700 rounded-lg overflow-hidden">
+                  <img
+                    [src]="item.game.coverImageUrl"
+                    [alt]="item.game.title"
+                    class="w-full h-full object-cover"
+                    (error)="onImageError($event)"
+                  />
+                </div>
+              </div>
+
+              <!-- Game Info -->
+              <div class="flex-1 min-w-0">
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                  {{ item.game.title }}
+                </h4>
+                <div class="flex items-center space-x-2 mb-2">
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ getGenreBadgeClass(item.game.genre) }}">
+                    {{ item.game.genre }}
+                  </span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">
+                    Released: {{ formatDate(item.game.releaseDate) }}
+                  </span>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                  {{ item.game.description }}
+                </p>
+              </div>
+
+              <!-- Price and Actions -->
+              <div class="flex items-center space-x-4">
+                <div class="text-right">
+                  <div class="text-xl font-bold text-primary-600 dark:text-primary-400">
+                    {{ formatPrice(item.game.price) }}
+                  </div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">
+                    Qty: {{ item.quantity }}
+                  </div>
+                </div>
+                <button
+                  (click)="removeFromCart(item.game.id)"
+                  class="btn-danger text-sm px-3 py-2"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cart Summary -->
+        <div class="card p-6">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Order Summary
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ cartItemCount }} item{{ cartItemCount !== 1 ? 's' : '' }} in your cart
+              </p>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {{ getCartTotalFormatted() }}
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                Total (USD)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4">
+          <button
+            (click)="continueShopping()"
+            class="btn-secondary flex-1 sm:flex-none sm:w-auto"
+          >
+            Continue Shopping
+          </button>
+          <button
+            (click)="proceedToCheckout()"
+            class="btn-primary flex-1 sm:flex-none sm:w-auto"
+          >
+            Proceed to Checkout
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty Cart State -->
+      <div *ngIf="cartItems.length === 0" class="card p-8 text-center">
+        <div class="max-w-md mx-auto">
+          <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            Your Cart is Empty
+          </h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">
+            Looks like you haven't added any games to your cart yet. Start shopping to add some amazing games!
+          </p>
+          <button
+            (click)="continueShopping()"
+            class="btn-primary"
+          >
+            Start Shopping
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

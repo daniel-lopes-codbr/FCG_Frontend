@@ -18,6 +18,7 @@ import { GameListComponent } from './components/game-management/game-list/game-l
 import { GameFormComponent } from './components/game-management/game-form/game-form.component';
 import { GameDetailsComponent } from './components/game-management/game-details/game-details.component';
 import { MarketplaceComponent } from './components/marketplace/marketplace.component';
+import { CartComponent } from './components/cart/cart.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 
@@ -27,6 +28,7 @@ const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'marketplace', component: MarketplaceComponent, canActivate: [AuthGuard] },
+  { path: 'cart', component: CartComponent, canActivate: [AuthGuard] },
   { path: 'admin', component: AdminDashboardComponent, canActivate: [AdminGuard] },
   { path: '**', redirectTo: '/login' }
 ];
@@ -44,7 +46,8 @@ const routes: Routes = [
     GameListComponent,
     GameFormComponent,
     GameDetailsComponent,
-    MarketplaceComponent
+    MarketplaceComponent,
+    CartComponent
   ],
   imports: [
     BrowserModule,
