@@ -4,6 +4,8 @@ import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { UserDto } from '../../models/user.model';
 import { AdminOnlyService } from '../../services/admin-only.service';
+import { SystemHealthService, SystemHealthOverview, ApiHealth } from '../../services/system-health.service';
+import { OperationalMetricsService, OperationalMetrics } from '../../services/operational-metrics.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -27,11 +29,21 @@ export class AdminDashboardComponent implements OnInit {
   selectedGame: any = null;
   isGameEditMode = false;
 
+  // System health and operational metrics
+  systemHealth: SystemHealthOverview | null = null;
+  operationalMetrics: OperationalMetrics | null = null;
+  isLoadingHealth = false;
+  isLoadingMetrics = false;
+  healthError = '';
+  metricsError = '';
+
   constructor(
     private authService: AuthService,
     public router: Router,
     private themeService: ThemeService,
-    private adminService: AdminOnlyService
+    private adminService: AdminOnlyService,
+    private systemHealthService: SystemHealthService,
+    private operationalMetricsService: OperationalMetricsService
   ) {}
 
   ngOnInit(): void {
@@ -52,6 +64,12 @@ export class AdminDashboardComponent implements OnInit {
 
   setActiveTab(tab: 'users' | 'games' | 'overview'): void {
     this.activeTab = tab;
+
+    // Load data when switching to overview tab
+    if (tab === 'overview') {
+      this.loadSystemHealth();
+      this.loadOperationalMetrics();
+    }
   }
 
   getInitialLetter(): string {
@@ -187,5 +205,82 @@ export class AdminDashboardComponent implements OnInit {
     this.isGameEditMode = true;
     this.showGameForm = true;
     this.showGameDetails = false;
+  }
+
+  // System Health and Operational Metrics Methods
+  private loadSystemHealth(): void {
+    this.isLoadingHealth = true;
+    this.healthError = '';
+
+    this.systemHealthService.getSystemHealthOverview().subscribe({
+      next: (health) => {
+        this.systemHealth = health;
+        this.isLoadingHealth = false;
+        console.log('🏥 System health loaded:', health);
+      },
+      error: (error) => {
+        console.error('❌ Error loading system health:', error);
+        this.healthError = 'Unable to load system health. Please try again later.';
+        this.isLoadingHealth = false;
+      }
+    });
+  }
+
+  private loadOperationalMetrics(): void {
+    this.isLoadingMetrics = true;
+    this.metricsError = '';
+
+    this.operationalMetricsService.getOperationalMetrics().subscribe({
+      next: (metrics) => {
+        this.operationalMetrics = metrics;
+        this.isLoadingMetrics = false;
+        console.log('📊 Operational metrics loaded:', metrics);
+      },
+      error: (error) => {
+        console.error('❌ Error loading operational metrics:', error);
+        this.metricsError = 'Unable to load operational metrics. Please try again later.';
+        this.isLoadingMetrics = false;
+      }
+    });
+  }
+
+  refreshSystemHealth(): void {
+    this.loadSystemHealth();
+  }
+
+  refreshOperationalMetrics(): void {
+    this.loadOperationalMetrics();
+  }
+
+  getHealthStatusClass(status: string): string {
+    switch (status) {
+      case 'healthy':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'degraded':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'unhealthy':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+    }
+  }
+
+  getApiStatusClass(status: string): string {
+    switch (status) {
+      case 'healthy':
+        return 'text-green-600 dark:text-green-400';
+      case 'unhealthy':
+        return 'text-red-600 dark:text-red-400';
+      default:
+        return 'text-gray-600 dark:text-gray-400';
+    }
+  }
+
+  formatResponseTime(time: number): string {
+    return `${time.toFixed(0)}ms`;
+  }
+
+  formatTimestamp(timestamp: Date): string {
+    return new Date(timestamp).toLocaleString();
   }
 }

@@ -123,9 +123,86 @@
       </div>
 
       <!-- Dashboard Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Quick Stats -->
-        <div class="card p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Admin Stats -->
+        <div *ngIf="currentUser?.permission === 'Admin'" class="card p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                <span *ngIf="isLoadingMetrics">...</span>
+                <span *ngIf="!isLoadingMetrics">{{ businessMetrics.totalUsers }}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="currentUser?.permission === 'Admin'" class="card p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Games</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                <span *ngIf="isLoadingMetrics">...</span>
+                <span *ngIf="!isLoadingMetrics">{{ businessMetrics.totalGames }}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="currentUser?.permission === 'Admin'" class="card p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sales</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                <span *ngIf="isLoadingMetrics">...</span>
+                <span *ngIf="!isLoadingMetrics">{{ businessMetrics.totalSales }}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="currentUser?.permission === 'Admin'" class="card p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Revenue</p>
+              <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                <span *ngIf="isLoadingMetrics">...</span>
+                <span *ngIf="!isLoadingMetrics">${{ businessMetrics.totalRevenue.toFixed(2) }}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Non-Admin Stats -->
+        <div *ngIf="currentUser?.permission !== 'Admin'" class="card p-6">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
@@ -144,7 +221,7 @@
           </div>
         </div>
 
-        <div class="card p-6">
+        <div *ngIf="currentUser?.permission !== 'Admin'" class="card p-6">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
@@ -160,7 +237,7 @@
           </div>
         </div>
 
-        <div class="card p-6">
+        <div *ngIf="currentUser?.permission !== 'Admin'" class="card p-6">
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
@@ -282,27 +359,83 @@
         </div>
       </div>
 
-      <!-- Coming Soon Section (for admin users) -->
-      <div *ngIf="currentUser?.permission === 'Admin'" class="mt-8 card p-8 text-center">
-        <div class="max-w-md mx-auto">
-          <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+      <!-- Admin Business Overview Section -->
+      <div *ngIf="currentUser?.permission === 'Admin'" class="mt-8">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Business Overview</h3>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoadingMetrics" class="card p-8 text-center">
+          <div class="flex items-center justify-center">
+            <svg class="animate-spin h-8 w-8 text-primary-600" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
+            <span class="ml-3 text-gray-600 dark:text-gray-400">Loading business metrics...</span>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            Game Marketplace Coming Soon!
-          </h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-4">
-            We're working hard to bring you the best gaming marketplace experience. Stay tuned for updates!
-          </p>
-          <div class="flex justify-center space-x-4">
-            <button class="btn-primary">
-              Browse Games
-            </button>
-            <button class="btn-secondary">
-              Sell Games
-            </button>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="metricsError && !isLoadingMetrics" class="card p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm text-red-600 dark:text-red-400">{{ metricsError }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Business Metrics Info -->
+        <div *ngIf="!isLoadingMetrics && !metricsError" class="card p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Platform Status</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Total Users:</span>
+                  <span class="font-medium text-gray-900 dark:text-gray-100">{{ businessMetrics.totalUsers }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Total Games:</span>
+                  <span class="font-medium text-gray-900 dark:text-gray-100">{{ businessMetrics.totalGames }}</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Sales Information</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Total Sales:</span>
+                  <span class="font-medium text-gray-900 dark:text-gray-100">{{ businessMetrics.totalSales }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Total Revenue:</span>
+                  <span class="font-medium text-gray-900 dark:text-gray-100">${{ businessMetrics.totalRevenue.toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Note about Sales/Revenue -->
+          <div *ngIf="businessMetrics.totalSales === 0 && businessMetrics.totalRevenue === 0" class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                  <strong>Note:</strong> Sales and revenue tracking requires dedicated API endpoints.
+                  Currently showing placeholder values. To get real sales data, implement dedicated sales/revenue endpoints in the APIs.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

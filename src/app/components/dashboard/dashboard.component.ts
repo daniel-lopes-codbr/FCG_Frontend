@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { CartService } from '../../services/cart.service';
 import { GameLibraryService, GameLibraryDto } from '../../services/game-library.service';
+import { BusinessMetricsService, BusinessMetrics } from '../../services/business-metrics.service';
 import { UserDto } from '../../models/user.model';
 
 @Component({
@@ -18,12 +19,23 @@ export class DashboardComponent implements OnInit {
   isLoadingLibrary = false;
   libraryError = '';
 
+  // Admin business metrics
+  businessMetrics: BusinessMetrics = {
+    totalUsers: 0,
+    totalGames: 0,
+    totalSales: 0,
+    totalRevenue: 0
+  };
+  isLoadingMetrics = false;
+  metricsError = '';
+
   constructor(
     private authService: AuthService,
     public router: Router,
     private themeService: ThemeService,
     private cartService: CartService,
-    private gameLibraryService: GameLibraryService
+    private gameLibraryService: GameLibraryService,
+    private businessMetricsService: BusinessMetricsService
   ) {}
 
   ngOnInit(): void {
@@ -31,8 +43,10 @@ export class DashboardComponent implements OnInit {
     if (!this.currentUser) {
       this.router.navigate(['/login']);
     } else {
-      // Load user's game library for non-admin users
-      if (this.currentUser.permission !== 'Admin') {
+      // Load appropriate data based on user type
+      if (this.currentUser.permission === 'Admin') {
+        this.loadBusinessMetrics();
+      } else {
         this.loadUserGameLibrary();
       }
     }
@@ -74,6 +88,24 @@ export class DashboardComponent implements OnInit {
 
   navigateToCart(): void {
     this.router.navigate(['/cart']);
+  }
+
+  private loadBusinessMetrics(): void {
+    this.isLoadingMetrics = true;
+    this.metricsError = '';
+
+    this.businessMetricsService.getBusinessMetrics().subscribe({
+      next: (metrics) => {
+        this.businessMetrics = metrics;
+        this.isLoadingMetrics = false;
+        console.log('📊 Business metrics loaded:', metrics);
+      },
+      error: (error) => {
+        console.error('❌ Error loading business metrics:', error);
+        this.metricsError = 'Unable to load business metrics. Please try again later.';
+        this.isLoadingMetrics = false;
+      }
+    });
   }
 
   private loadUserGameLibrary(): void {

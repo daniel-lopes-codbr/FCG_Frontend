@@ -126,68 +126,223 @@
       <div class="tab-content">
         <!-- Overview Tab -->
         <div *ngIf="activeTab === 'overview'" class="space-y-6">
-          <!-- Quick Stats -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="card p-6">
-              <div class="flex items-center">
+          <!-- System Health Overview -->
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">System Health</h3>
+              <button
+                (click)="refreshSystemHealth()"
+                [disabled]="isLoadingHealth"
+                class="btn-secondary text-sm"
+              >
+                <svg *ngIf="isLoadingHealth" class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <svg *ngIf="!isLoadingHealth" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+              </button>
+            </div>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoadingHealth" class="text-center py-8">
+              <svg class="animate-spin h-8 w-8 text-primary-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p class="text-gray-600 dark:text-gray-400">Checking system health...</p>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="healthError && !isLoadingHealth" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+              <div class="flex">
                 <div class="flex-shrink-0">
-                  <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                    </svg>
-                  </div>
+                  <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
-                <div class="ml-4">
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</p>
-                  <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">-</p>
+                <div class="ml-3">
+                  <p class="text-sm text-red-600 dark:text-red-400">{{ healthError }}</p>
                 </div>
               </div>
             </div>
 
-            <div class="card p-6">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-9 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2" />
-                    </svg>
+            <!-- Health Status -->
+            <div *ngIf="systemHealth && !isLoadingHealth && !healthError" class="space-y-4">
+              <!-- Overall Status -->
+              <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0">
+                    <div [class]="systemHealth.overallStatus === 'healthy' ? 'w-3 h-3 bg-green-400' : systemHealth.overallStatus === 'degraded' ? 'w-3 h-3 bg-yellow-400' : 'w-3 h-3 bg-red-400'" class="rounded-full"></div>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Overall System Status</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {{ systemHealth.healthyApis }}/{{ systemHealth.totalApis }} APIs healthy
+                    </p>
                   </div>
                 </div>
-                <div class="ml-4">
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Games</p>
-                  <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">-</p>
+                <span [class]="getHealthStatusClass(systemHealth.overallStatus)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                  {{ systemHealth.overallStatus | titlecase }}
+                </span>
+              </div>
+
+              <!-- API Status Details -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div *ngFor="let api of systemHealth.apis" class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ api.name }}</h4>
+                    <div [class]="api.status === 'healthy' ? 'w-2 h-2 bg-green-400' : 'w-2 h-2 bg-red-400'" class="rounded-full"></div>
+                  </div>
+                  <div class="space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                    <div class="flex justify-between">
+                      <span>Status:</span>
+                      <span [class]="getApiStatusClass(api.status)">{{ api.status | titlecase }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>Response Time:</span>
+                      <span>{{ formatResponseTime(api.responseTime) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>Last Checked:</span>
+                      <span>{{ formatTimestamp(api.lastChecked) }}</span>
+                    </div>
+                    <div *ngIf="api.error" class="text-red-600 dark:text-red-400 text-xs mt-2">
+                      Error: {{ api.error }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Operational Metrics -->
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Operational Metrics</h3>
+              <button
+                (click)="refreshOperationalMetrics()"
+                [disabled]="isLoadingMetrics"
+                class="btn-secondary text-sm"
+              >
+                <svg *ngIf="isLoadingMetrics" class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <svg *ngIf="!isLoadingMetrics" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+              </button>
+            </div>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoadingMetrics" class="text-center py-8">
+              <svg class="animate-spin h-8 w-8 text-primary-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p class="text-gray-600 dark:text-gray-400">Loading operational metrics...</p>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="metricsError && !isLoadingMetrics" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm text-red-600 dark:text-red-400">{{ metricsError }}</p>
                 </div>
               </div>
             </div>
 
-            <div class="card p-6">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
+            <!-- Metrics Data -->
+            <div *ngIf="operationalMetrics && !isLoadingMetrics && !metricsError" class="space-y-4">
+              <!-- Quick Stats -->
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                      <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Recent Users</p>
+                      <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ operationalMetrics.recentUserRegistrations }}</p>
+                    </div>
                   </div>
                 </div>
-                <div class="ml-4">
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Sales</p>
-                  <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">-</p>
+
+                <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                      <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-9 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Recent Games</p>
+                      <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ operationalMetrics.recentGameAdditions }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                      <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Recent Sales</p>
+                      <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ operationalMetrics.recentSales }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                      <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Response</p>
+                      <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ formatResponseTime(operationalMetrics.averageResponseTime) }}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="card p-6">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                    </svg>
+              <!-- Recent Activities -->
+              <div *ngIf="operationalMetrics.recentActivities.length > 0">
+                <h4 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-3">Recent Activities</h4>
+                <div class="space-y-2">
+                  <div *ngFor="let activity of operationalMetrics.recentActivities" class="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div class="flex-shrink-0">
+                      <div [class]="activity.type === 'user_registration' ? 'w-2 h-2 bg-blue-400' : activity.type === 'game_addition' ? 'w-2 h-2 bg-green-400' : activity.type === 'purchase' ? 'w-2 h-2 bg-purple-400' : 'w-2 h-2 bg-gray-400'" class="rounded-full"></div>
+                    </div>
+                    <div class="ml-3 flex-1">
+                      <p class="text-sm text-gray-900 dark:text-gray-100">{{ activity.description }}</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatTimestamp(activity.timestamp) }}</p>
+                    </div>
                   </div>
-                </div>
-                <div class="ml-4">
-                  <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Revenue</p>
-                  <p class="text-2xl font-semibold text-gray-900 dark:text-gray-100">-</p>
                 </div>
               </div>
             </div>
