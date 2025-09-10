@@ -1,0 +1,91 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+    <div class="text-center">
+      <!-- Success Icon -->
+      <div *ngIf="isSuccess" class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900">
+        <svg class="h-8 w-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+
+      <!-- Error Icon -->
+      <div *ngIf="isError" class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900">
+        <svg class="h-8 w-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="isProcessing" class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900">
+        <svg class="animate-spin h-8 w-8 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+
+      <!-- Title -->
+      <h2 *ngIf="isProcessing" class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
+        Processing Payment...
+      </h2>
+      <h2 *ngIf="isSuccess" class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
+        Payment Successful!
+      </h2>
+      <h2 *ngIf="isError" class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
+        Payment Issue
+      </h2>
+    </div>
+
+    <!-- Content -->
+    <div class="mt-8 space-y-6">
+      <!-- Processing Message -->
+      <div *ngIf="isProcessing" class="text-center">
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          Please wait while we register your purchase...
+        </p>
+      </div>
+
+      <!-- Success Message -->
+      <div *ngIf="isSuccess" class="text-center space-y-4">
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          Your payment has been processed successfully!
+        </p>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          Your games have been added to your library.
+        </p>
+        <div *ngIf="purchasedGames.length > 0" class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4">
+          <p class="text-sm text-green-800 dark:text-green-200 font-medium">
+            {{ purchasedGames.length }} game(s) added to your library
+          </p>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          Redirecting to dashboard in 3 seconds...
+        </p>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="isError" class="text-center space-y-4">
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          {{ errorMessage }}
+        </p>
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
+          <p class="text-sm text-yellow-800 dark:text-yellow-200">
+            Your payment was processed successfully. If you don't see your games in your library, please contact support.
+          </p>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          Redirecting to dashboard in 5 seconds...
+        </p>
+      </div>
+
+      <!-- Action Button -->
+      <div class="text-center">
+        <button
+          (click)="goToDashboard()"
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+        >
+          Go to Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

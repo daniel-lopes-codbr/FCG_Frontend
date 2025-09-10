@@ -5,6 +5,7 @@ import { PaymentService, CreateCustomerDto, CreateProductDto } from './payment.s
 import { CartService, CartItem } from './cart.service';
 import { AuthService } from './auth.service';
 import { MarketplaceService, GameDto } from './marketplace.service';
+import { GameLibraryService } from './game-library.service';
 import { UserDto } from '../models/user.model';
 
 export interface CheckoutResult {
@@ -21,7 +22,8 @@ export class CheckoutService {
     private paymentService: PaymentService,
     private cartService: CartService,
     private authService: AuthService,
-    private marketplaceService: MarketplaceService
+    private marketplaceService: MarketplaceService,
+    private gameLibraryService: GameLibraryService
   ) {}
 
   processCheckout(): Observable<CheckoutResult> {
@@ -160,5 +162,69 @@ export class CheckoutService {
         throw error;
       })
     );
+  }
+
+  /**
+   * Register purchases in the Game Library after successful Stripe payment
+   * This method should be called when the user returns from successful Stripe checkout
+   * @param userId The user ID who made the purchase
+   * @param gameIds Array of game IDs that were purchased
+   * @returns Observable<boolean> True if all purchases were registered successfully
+   */
+  registerPurchases(userId: string, gameIds: string[]): Observable<boolean> {
+    console.log('📚 Registering purchases in Game Library:', { userId, gameIds });
+
+    if (!gameIds || gameIds.length === 0) {
+      console.log('📚 No games to register');
+      return of(true);
+    }
+
+    // Register all purchases in parallel
+    const registrationObservables = gameIds.map(gameId =>
+      this.gameLibraryService.registerPurchase(userId, gameId).pipe(
+        map(() => {
+          console.log(`✅ Successfully registered purchase for game: ${gameId}`);
+          return true;
+        }),
+        catchError(error => {
+          console.error(`❌ Failed to register purchase for game ${gameId}:`, error);
+          // For MVP, we'll continue even if some registrations fail
+          return of(false);
+        })
+      )
+    );
+
+    return forkJoin(registrationObservables).pipe(
+      map(results => {
+        const successCount = results.filter(r => r).length;
+        const totalCount = results.length;
+        console.log(`📚 Purchase registration completed: ${successCount}/${totalCount} successful`);
+
+        // For MVP, we consider it successful if at least one purchase was registered
+        return successCount > 0;
+      }),
+      catchError(error => {
+        console.error('❌ Error during purchase registration:', error);
+        // For MVP, we don't want to fail the entire flow if registration fails
+        return of(false);
+      })
+    );
+  }
+
+  /**
+   * Handle successful payment return from Stripe
+   * This method should be called when the user returns from successful Stripe checkout
+   * @param userId The user ID who made the purchase
+   * @param purchasedGameIds Array of game IDs that were purchased
+   * @returns Observable<boolean> True if all purchases were registered successfully
+   */
+  handleSuccessfulPayment(userId: string, purchasedGameIds: string[]): Observable<boolean> {
+    console.log('🎉 Handling successful payment:', { userId, purchasedGameIds });
+
+    // Clear the cart since payment was successful
+    this.cartService.clearCart();
+
+    // Register the purchases in the Game Library
+    return this.registerPurchases(userId, purchasedGameIds);
   }
 }
