@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { CartService, CartItem } from '../../services/cart.service';
+import { CheckoutService, CheckoutResult } from '../../services/checkout.service';
 import { UserDto } from '../../models/user.model';
 
 @Component({
@@ -17,12 +18,14 @@ export class CartComponent implements OnInit {
   cartItems: CartItem[] = [];
   cartTotal = 0;
   cartItemCount = 0;
+  isProcessingCheckout = false;
 
   constructor(
     private authService: AuthService,
     public router: Router,
     private themeService: ThemeService,
-    private cartService: CartService
+    private cartService: CartService,
+    private checkoutService: CheckoutService
   ) {}
 
   ngOnInit(): void {
@@ -61,8 +64,35 @@ export class CartComponent implements OnInit {
       return;
     }
 
-    // TODO: Implement actual checkout flow in Step 3
-    alert(`Proceeding to checkout with ${this.cartItemCount} item(s) totaling ${this.getCartTotalFormatted()}. Checkout integration coming in Step 3!`);
+    this.isProcessingCheckout = true;
+
+    this.checkoutService.processCheckout().subscribe({
+      next: (result: CheckoutResult) => {
+        this.isProcessingCheckout = false;
+        console.log('✅ Checkout success result:', result);
+
+        if (result.success && result.checkoutUrl) {
+          console.log('🚀 Redirecting to:', result.checkoutUrl);
+          // Redirect to Stripe checkout
+          window.location.href = result.checkoutUrl;
+        } else {
+          console.log('❌ Checkout failed:', result.error);
+          // Show error message
+          alert(result.error || 'Checkout failed. Please try again.');
+        }
+      },
+      error: (error) => {
+        this.isProcessingCheckout = false;
+        console.error('❌ Checkout error caught:', error);
+        console.error('Error details:', {
+          message: error.message,
+          status: error.status,
+          statusText: error.statusText,
+          url: error.url
+        });
+        alert('Unable to finalize the checkout since it\'s a MVP');
+      }
+    });
   }
 
   continueShopping(): void {

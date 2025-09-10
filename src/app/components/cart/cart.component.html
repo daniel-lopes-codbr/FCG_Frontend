@@ -177,9 +177,11 @@
           </button>
           <button
             (click)="proceedToCheckout()"
-            class="btn-primary flex-1 sm:flex-none sm:w-auto"
+            [disabled]="isProcessingCheckout"
+            class="btn-primary flex-1 sm:flex-none sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
-            Proceed to Checkout
+            <div *ngIf="isProcessingCheckout" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            <span>{{ isProcessingCheckout ? 'Processing...' : 'Proceed to Checkout' }}</span>
           </button>
         </div>
       </div>

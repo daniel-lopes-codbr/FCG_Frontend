@@ -38,6 +38,17 @@
   background-clip: text;
 }
 
+/* Loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 /* Cart item hover effects */
 .cart-item {
   transition: all 0.2s ease-in-out;
