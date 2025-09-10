@@ -41,8 +41,6 @@ export class OperationalMetricsService {
    * @returns Observable<OperationalMetrics> Operational data
    */
   getOperationalMetrics(): Observable<OperationalMetrics> {
-    console.log('📊 Fetching operational metrics...');
-
     return forkJoin({
       recentUsers: this.getRecentUserRegistrations(),
       recentGames: this.getRecentGameAdditions(),
@@ -63,7 +61,6 @@ export class OperationalMetricsService {
           lastUpdated: new Date()
         };
 
-        console.log('📊 Operational metrics loaded:', metrics);
         return metrics;
       }),
       catchError(error => {
@@ -97,7 +94,6 @@ export class OperationalMetricsService {
 
         // Since we don't have creation dates in the current API,
         // we'll return a placeholder value
-        console.log('📊 Recent user registrations calculation needs dedicated API endpoint');
         return 0; // Placeholder
       }),
       catchError(error => {
@@ -141,7 +137,6 @@ export class OperationalMetricsService {
   private getRecentSales(): Observable<number> {
     // For MVP, we'll return a placeholder
     // In a real implementation, you'd have a dedicated sales endpoint
-    console.log('📊 Recent sales calculation needs dedicated sales API endpoint');
     return of(0);
   }
 
@@ -152,7 +147,6 @@ export class OperationalMetricsService {
   private getSystemUptime(): Observable<string> {
     // For MVP, we'll return a placeholder
     // In a real implementation, you'd get this from system monitoring
-    console.log('📊 System uptime calculation needs system monitoring integration');
     return of('99.9%');
   }
 
@@ -163,7 +157,6 @@ export class OperationalMetricsService {
   private getAverageResponseTime(): Observable<number> {
     // For MVP, we'll return a placeholder
     // In a real implementation, you'd measure actual response times
-    console.log('📊 Average response time calculation needs performance monitoring');
     return of(150); // Placeholder: 150ms
   }
 
@@ -174,7 +167,6 @@ export class OperationalMetricsService {
   private getErrorRate(): Observable<number> {
     // For MVP, we'll return a placeholder
     // In a real implementation, you'd calculate from logs
-    console.log('📊 Error rate calculation needs log analysis');
     return of(0.1); // Placeholder: 0.1%
   }
 

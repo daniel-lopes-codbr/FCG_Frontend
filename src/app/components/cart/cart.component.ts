@@ -69,10 +69,8 @@ export class CartComponent implements OnInit {
     this.checkoutService.processCheckout().subscribe({
       next: (result: CheckoutResult) => {
         this.isProcessingCheckout = false;
-        console.log('✅ Checkout success result:', result);
 
         if (result.success && result.checkoutUrl) {
-          console.log('🚀 Redirecting to:', result.checkoutUrl);
           // Redirect to Stripe checkout
           window.location.href = result.checkoutUrl;
         } else {

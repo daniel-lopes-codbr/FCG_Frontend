@@ -123,9 +123,6 @@ export class PaymentService {
       quantity: quantity
     };
 
-    console.log('💳 Sending checkout data:', checkoutData);
-    console.log('💳 API URL:', `${this.API_BASE_URL}/checkout`);
-
     return this.http.post<CheckoutSessionDto>(`${this.API_BASE_URL}/checkout`, checkoutData, {
       headers: this.getHeaders()
     }).pipe(

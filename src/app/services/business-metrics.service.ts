@@ -32,8 +32,6 @@ export class BusinessMetricsService {
    * @returns Observable<BusinessMetrics> with all business data
    */
   getBusinessMetrics(): Observable<BusinessMetrics> {
-    console.log('📊 Fetching business metrics...');
-
     return forkJoin({
       totalUsers: this.getTotalUsers(),
       totalGames: this.getTotalGames(),
@@ -41,7 +39,6 @@ export class BusinessMetricsService {
       totalRevenue: this.getTotalRevenue()
     }).pipe(
       map(metrics => {
-        console.log('📊 Business metrics loaded:', metrics);
         return metrics;
       }),
       catchError(error => {
@@ -97,7 +94,6 @@ export class BusinessMetricsService {
       map(response => {
         // This is a simplified approach - in reality you'd have a dedicated sales endpoint
         // For now, we'll return 0 and let the admin know this needs a proper sales API
-        console.log('📊 Total sales calculation needs dedicated sales API endpoint');
         return 0;
       }),
       catchError(error => {
@@ -115,7 +111,6 @@ export class BusinessMetricsService {
   private getTotalRevenue(): Observable<number> {
     // For MVP, we'll return 0 and let the admin know this needs a proper revenue API
     // In a real implementation, you'd have a dedicated revenue/sales endpoint
-    console.log('📊 Total revenue calculation needs dedicated revenue API endpoint');
     return of(0);
   }
 

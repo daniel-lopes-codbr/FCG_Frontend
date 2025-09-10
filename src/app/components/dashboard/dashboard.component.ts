@@ -98,7 +98,6 @@ export class DashboardComponent implements OnInit {
       next: (metrics) => {
         this.businessMetrics = metrics;
         this.isLoadingMetrics = false;
-        console.log('📊 Business metrics loaded:', metrics);
       },
       error: (error) => {
         console.error('❌ Error loading business metrics:', error);
@@ -118,7 +117,6 @@ export class DashboardComponent implements OnInit {
       next: (library) => {
         this.userGameLibrary = library;
         this.isLoadingLibrary = false;
-        console.log('📚 User game library loaded:', library);
       },
       error: (error) => {
         console.error('❌ Error loading user game library:', error);
@@ -171,7 +169,6 @@ export class DashboardComponent implements OnInit {
       next: () => {
         // Update the local state
         game.isInstalled = newStatus;
-        console.log(`✅ Installation status updated for ${game.gameTitle}: ${newStatus ? 'Installed' : 'Not Installed'}`);
       },
       error: (error) => {
         console.error('❌ Error updating installation status:', error);

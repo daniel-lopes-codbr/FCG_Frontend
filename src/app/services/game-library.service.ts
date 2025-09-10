@@ -28,7 +28,6 @@ export class GameLibraryService {
    * @returns Observable<GameLibraryDto> The created library entry
    */
   registerPurchase(userId: string, gameId: string): Observable<GameLibraryDto> {
-    console.log('📚 Registering purchase:', { userId, gameId });
 
     return this.http.post<GameLibraryDto>(
       `${this.API_BASE_URL}/users/${userId}/library?gameId=${gameId}`,

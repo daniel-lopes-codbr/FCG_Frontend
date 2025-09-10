@@ -107,7 +107,6 @@ export class AdminDashboardComponent implements OnInit {
       this.adminService.deleteUser(user.id).subscribe({
         next: () => {
           // Refresh the user list or show success message
-          console.log('User deleted successfully');
         },
         error: (error) => {
           console.error('Error deleting user:', error);
@@ -120,7 +119,6 @@ export class AdminDashboardComponent implements OnInit {
     this.showUserForm = false;
     this.selectedUser = null;
     // Refresh the user list or show success message
-    console.log('User saved successfully:', user);
   }
 
   onUserFormCancelled(): void {
@@ -137,12 +135,10 @@ export class AdminDashboardComponent implements OnInit {
     this.showUserDetails = false;
     this.selectedUser = null;
     // Refresh the user list or show success message
-    console.log('User updated successfully:', user);
   }
 
   onUserPermissionChanged(user: UserDto): void {
     // Show success message or update UI
-    console.log('User permission changed successfully:', user);
     // You could add a toast notification here
   }
 
@@ -171,7 +167,6 @@ export class AdminDashboardComponent implements OnInit {
     if (confirm(`Are you sure you want to delete game "${game.title}"? This action cannot be undone.`)) {
       this.adminService.deleteGame(game.id).subscribe({
         next: () => {
-          console.log('Game deleted successfully');
           alert('Game deleted successfully!');
         },
         error: (error) => {
@@ -185,7 +180,6 @@ export class AdminDashboardComponent implements OnInit {
   onGameSaved(game: any): void {
     this.showGameForm = false;
     this.selectedGame = null;
-    console.log('Game saved successfully:', game);
     alert(`Game ${this.isGameEditMode ? 'updated' : 'created'} successfully!`);
   }
 
@@ -216,7 +210,6 @@ export class AdminDashboardComponent implements OnInit {
       next: (health) => {
         this.systemHealth = health;
         this.isLoadingHealth = false;
-        console.log('🏥 System health loaded:', health);
       },
       error: (error) => {
         console.error('❌ Error loading system health:', error);
@@ -234,7 +227,6 @@ export class AdminDashboardComponent implements OnInit {
       next: (metrics) => {
         this.operationalMetrics = metrics;
         this.isLoadingMetrics = false;
-        console.log('📊 Operational metrics loaded:', metrics);
       },
       error: (error) => {
         console.error('❌ Error loading operational metrics:', error);

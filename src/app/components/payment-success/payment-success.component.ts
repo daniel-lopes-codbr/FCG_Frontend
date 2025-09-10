@@ -33,10 +33,8 @@ export class PaymentSuccessComponent implements OnInit {
     const success = this.route.snapshot.queryParams['success'];
 
     if (success === 'true') {
-      console.log('🎉 Payment success detected, processing...');
       this.processSuccessfulPayment();
     } else {
-      console.log('❌ No success parameter found, redirecting to dashboard');
       this.router.navigate(['/dashboard']);
     }
   }
@@ -56,12 +54,10 @@ export class PaymentSuccessComponent implements OnInit {
     const gameIds = cartItems.map(item => item.game.id);
 
     if (gameIds.length === 0) {
-      console.log('📚 No games found in cart, redirecting to dashboard');
       this.router.navigate(['/dashboard']);
       return;
     }
 
-    console.log('📚 Processing purchase registration for games:', gameIds);
 
     // Register the purchases in the Game Library
     this.checkoutService.handleSuccessfulPayment(currentUser.id, gameIds).subscribe({
@@ -70,7 +66,6 @@ export class PaymentSuccessComponent implements OnInit {
         if (success) {
           this.isSuccess = true;
           this.purchasedGames = gameIds;
-          console.log('✅ Purchase registration completed successfully');
 
           // Redirect to dashboard after 3 seconds
           setTimeout(() => {

@@ -172,10 +172,7 @@ export class CheckoutService {
    * @returns Observable<boolean> True if all purchases were registered successfully
    */
   registerPurchases(userId: string, gameIds: string[]): Observable<boolean> {
-    console.log('📚 Registering purchases in Game Library:', { userId, gameIds });
-
     if (!gameIds || gameIds.length === 0) {
-      console.log('📚 No games to register');
       return of(true);
     }
 
@@ -183,7 +180,6 @@ export class CheckoutService {
     const registrationObservables = gameIds.map(gameId =>
       this.gameLibraryService.registerPurchase(userId, gameId).pipe(
         map(() => {
-          console.log(`✅ Successfully registered purchase for game: ${gameId}`);
           return true;
         }),
         catchError(error => {
@@ -198,7 +194,6 @@ export class CheckoutService {
       map(results => {
         const successCount = results.filter(r => r).length;
         const totalCount = results.length;
-        console.log(`📚 Purchase registration completed: ${successCount}/${totalCount} successful`);
 
         // For MVP, we consider it successful if at least one purchase was registered
         return successCount > 0;
@@ -219,8 +214,6 @@ export class CheckoutService {
    * @returns Observable<boolean> True if all purchases were registered successfully
    */
   handleSuccessfulPayment(userId: string, purchasedGameIds: string[]): Observable<boolean> {
-    console.log('🎉 Handling successful payment:', { userId, purchasedGameIds });
-
     // Clear the cart since payment was successful
     this.cartService.clearCart();
 

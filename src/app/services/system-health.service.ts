@@ -67,8 +67,6 @@ export class SystemHealthService {
    * @returns Observable<SystemHealthOverview> Complete system health status
    */
   getSystemHealthOverview(): Observable<SystemHealthOverview> {
-    console.log('🏥 Checking system health...');
-
     const healthChecks = this.API_ENDPOINTS.map(endpoint =>
       this.checkApiHealth(endpoint.name, endpoint.healthUrl, endpoint.authType)
     );
@@ -100,7 +98,6 @@ export class SystemHealthService {
           lastUpdated: new Date()
         };
 
-        console.log('🏥 System health overview:', overview);
         return overview;
       }),
       catchError(error => {
@@ -187,7 +184,6 @@ export class SystemHealthService {
    * @returns Observable<SystemHealthOverview> Updated system health
    */
   refreshSystemHealth(): Observable<SystemHealthOverview> {
-    console.log('🔄 Refreshing system health...');
     return this.getSystemHealthOverview();
   }
 
