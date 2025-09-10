@@ -28,10 +28,11 @@ export class GameLibraryService {
    * @returns Observable<GameLibraryDto> The created library entry
    */
   registerPurchase(userId: string, gameId: string): Observable<GameLibraryDto> {
+    const requestBody = { gameId: gameId };
 
     return this.http.post<GameLibraryDto>(
-      `${this.API_BASE_URL}/users/${userId}/library?gameId=${gameId}`,
-      null, // No body needed for this endpoint
+      `${this.API_BASE_URL}/users/${userId}/library`,
+      requestBody,
       {
         headers: this.getHeaders()
       }

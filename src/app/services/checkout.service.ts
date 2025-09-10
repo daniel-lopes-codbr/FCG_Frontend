@@ -214,10 +214,15 @@ export class CheckoutService {
    * @returns Observable<boolean> True if all purchases were registered successfully
    */
   handleSuccessfulPayment(userId: string, purchasedGameIds: string[]): Observable<boolean> {
-    // Clear the cart since payment was successful
-    this.cartService.clearCart();
-
-    // Register the purchases in the Game Library
-    return this.registerPurchases(userId, purchasedGameIds);
+    // Register the purchases in the Game Library first
+    return this.registerPurchases(userId, purchasedGameIds).pipe(
+      map(success => {
+        // Clear the cart only after successful registration
+        if (success) {
+          this.cartService.clearCart();
+        }
+        return success;
+      })
+    );
   }
 }
