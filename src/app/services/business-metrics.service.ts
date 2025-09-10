@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, forkJoin, of } from 'rxjs';
-import { map, catchError, timeout } from 'rxjs/operators';
+import { map, catchError, timeout, switchMap } from 'rxjs/operators';
 import { AdminOnlyService } from './admin-only.service';
 import { MarketplaceService } from './marketplace.service';
 import { GameLibraryService } from './game-library.service';
@@ -88,13 +88,32 @@ export class BusinessMetricsService {
    * @returns Observable<number> total sales count
    */
   private getTotalSales(): Observable<number> {
-    // For MVP, we'll get all users and check their libraries
-    // In a real implementation, you'd have a dedicated sales/purchases endpoint
+    // Get all users and count total purchases across all libraries
     return this.adminOnlyService.getUsers(1, 1000).pipe(
-      map(response => {
-        // This is a simplified approach - in reality you'd have a dedicated sales endpoint
-        // For now, we'll return 0 and let the admin know this needs a proper sales API
-        return 0;
+      switchMap(usersResponse => {
+        const users = usersResponse.data;
+
+        if (users.length === 0) {
+          return of(0);
+        }
+
+        // Get library data for all users in parallel
+        const libraryObservables = users.map((user: any) =>
+          this.gameLibraryService.getUserLibrary(user.id).pipe(
+            map(library => library.length), // Count of games in library
+            catchError(error => {
+              console.error(`❌ Error getting library for user ${user.id}:`, error);
+              return of(0); // Return 0 if we can't get this user's library
+            })
+          )
+        );
+
+        return forkJoin(libraryObservables).pipe(
+          map((userSales: number[]) => {
+            const totalSales = userSales.reduce((total: number, userSale: number) => total + userSale, 0);
+            return totalSales;
+          })
+        );
       }),
       catchError(error => {
         console.error('❌ Error getting total sales:', error);
@@ -105,13 +124,42 @@ export class BusinessMetricsService {
 
   /**
    * Get total revenue from all sales
-   * Note: This is a simplified implementation. In a real app, you'd have a dedicated revenue endpoint
+   * Calculates revenue by aggregating purchase prices from all users' libraries
    * @returns Observable<number> total revenue
    */
   private getTotalRevenue(): Observable<number> {
-    // For MVP, we'll return 0 and let the admin know this needs a proper revenue API
-    // In a real implementation, you'd have a dedicated revenue/sales endpoint
-    return of(0);
+    // Get all users first
+    return this.adminOnlyService.getUsers(1, 1000).pipe(
+      switchMap(usersResponse => {
+        const users = usersResponse.data;
+
+        if (users.length === 0) {
+          return of(0);
+        }
+
+        // Get library data for all users in parallel
+        const libraryObservables = users.map((user: any) =>
+          this.gameLibraryService.getUserLibrary(user.id).pipe(
+            map(library => library.reduce((total: number, game: any) => total + game.purchasePrice, 0)),
+            catchError(error => {
+              console.error(`❌ Error getting library for user ${user.id}:`, error);
+              return of(0); // Return 0 if we can't get this user's library
+            })
+          )
+        );
+
+        return forkJoin(libraryObservables).pipe(
+          map((userRevenues: number[]) => {
+            const totalRevenue = userRevenues.reduce((total: number, userRevenue: number) => total + userRevenue, 0);
+            return totalRevenue;
+          })
+        );
+      }),
+      catchError(error => {
+        console.error('❌ Error getting total revenue:', error);
+        return of(0);
+      })
+    );
   }
 
   /**

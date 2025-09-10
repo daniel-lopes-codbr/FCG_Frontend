@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { MarketplaceService, GameDto } from '../../services/marketplace.service';
 import { CartService } from '../../services/cart.service';
+import { NotificationService } from '../../services/notification.service';
 import { UserDto } from '../../models/user.model';
 
 @Component({
@@ -35,7 +36,8 @@ export class MarketplaceComponent implements OnInit {
     public router: Router,
     private themeService: ThemeService,
     private marketplaceService: MarketplaceService,
-    private cartService: CartService
+    private cartService: CartService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -188,8 +190,12 @@ export class MarketplaceComponent implements OnInit {
 
   onBuyGame(game: GameDto): void {
     this.cartService.addToCart(game);
-    // Show success message
-    alert(`"${game.title}" added to cart!`);
+    // Show beautiful success notification
+    this.notificationService.showSuccess(
+      'Game Added to Cart!',
+      `"${game.title}" has been added to your cart successfully.`,
+      3000
+    );
   }
 
   isGameInCart(gameId: string): boolean {

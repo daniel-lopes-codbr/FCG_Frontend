@@ -33,7 +33,6 @@ export class CartService {
 
     if (existingItem) {
       // Game already in cart, show message (for MVP, we don't allow multiple quantities)
-      console.log(`Game "${game.title}" is already in your cart`);
       return;
     }
 
@@ -45,7 +44,6 @@ export class CartService {
 
     const updatedItems = [...currentItems, newItem];
     this.cartItemsSubject.next(updatedItems);
-    console.log(`Added "${game.title}" to cart`);
   }
 
   // Remove game from cart

@@ -20,6 +20,7 @@ import { GameDetailsComponent } from './components/game-management/game-details/
 import { MarketplaceComponent } from './components/marketplace/marketplace.component';
 import { CartComponent } from './components/cart/cart.component';
 import { PaymentSuccessComponent } from './components/payment-success/payment-success.component';
+import { NotificationComponent } from './components/notification/notification.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 
@@ -50,7 +51,8 @@ const routes: Routes = [
     GameDetailsComponent,
     MarketplaceComponent,
     CartComponent,
-    PaymentSuccessComponent
+    PaymentSuccessComponent,
+    NotificationComponent
   ],
   imports: [
     BrowserModule,

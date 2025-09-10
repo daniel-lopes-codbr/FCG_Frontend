@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { CartService, CartItem } from '../../services/cart.service';
 import { CheckoutService, CheckoutResult } from '../../services/checkout.service';
+import { NotificationService } from '../../services/notification.service';
 import { UserDto } from '../../models/user.model';
 
 @Component({
@@ -25,7 +26,8 @@ export class CartComponent implements OnInit {
     public router: Router,
     private themeService: ThemeService,
     private cartService: CartService,
-    private checkoutService: CheckoutService
+    private checkoutService: CheckoutService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -60,7 +62,11 @@ export class CartComponent implements OnInit {
 
   proceedToCheckout(): void {
     if (this.cartItems.length === 0) {
-      alert('Your cart is empty. Please add some games before proceeding to checkout.');
+      this.notificationService.showWarning(
+        'Empty Cart',
+        'Your cart is empty. Please add some games before proceeding to checkout.',
+        4000
+      );
       return;
     }
 
@@ -74,9 +80,12 @@ export class CartComponent implements OnInit {
           // Redirect to Stripe checkout
           window.location.href = result.checkoutUrl;
         } else {
-          console.log('❌ Checkout failed:', result.error);
-          // Show error message
-          alert(result.error || 'Checkout failed. Please try again.');
+          // Show error notification
+          this.notificationService.showError(
+            'Checkout Failed',
+            result.error || 'Checkout failed. Please try again.',
+            5000
+          );
         }
       },
       error: (error) => {
@@ -88,7 +97,11 @@ export class CartComponent implements OnInit {
           statusText: error.statusText,
           url: error.url
         });
-        alert('Unable to finalize the checkout since it\'s a MVP');
+        this.notificationService.showError(
+          'Checkout Error',
+          'Unable to finalize the checkout since it\'s a MVP',
+          5000
+        );
       }
     });
   }
