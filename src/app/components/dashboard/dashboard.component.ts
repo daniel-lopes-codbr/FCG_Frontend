@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { CartService } from '../../services/cart.service';
+import { GameLibraryService, GameLibraryDto } from '../../services/game-library.service';
 import { UserDto } from '../../models/user.model';
 
 @Component({
@@ -13,18 +14,27 @@ import { UserDto } from '../../models/user.model';
 export class DashboardComponent implements OnInit {
   currentUser: UserDto | null = null;
   darkMode$ = this.themeService.darkMode$;
+  userGameLibrary: GameLibraryDto[] = [];
+  isLoadingLibrary = false;
+  libraryError = '';
 
   constructor(
     private authService: AuthService,
     public router: Router,
     private themeService: ThemeService,
-    private cartService: CartService
+    private cartService: CartService,
+    private gameLibraryService: GameLibraryService
   ) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUserValue();
     if (!this.currentUser) {
       this.router.navigate(['/login']);
+    } else {
+      // Load user's game library for non-admin users
+      if (this.currentUser.permission !== 'Admin') {
+        this.loadUserGameLibrary();
+      }
     }
   }
 
@@ -64,5 +74,84 @@ export class DashboardComponent implements OnInit {
 
   navigateToCart(): void {
     this.router.navigate(['/cart']);
+  }
+
+  private loadUserGameLibrary(): void {
+    if (!this.currentUser) return;
+
+    this.isLoadingLibrary = true;
+    this.libraryError = '';
+
+    this.gameLibraryService.getUserLibrary(this.currentUser.id).subscribe({
+      next: (library) => {
+        this.userGameLibrary = library;
+        this.isLoadingLibrary = false;
+        console.log('📚 User game library loaded:', library);
+      },
+      error: (error) => {
+        console.error('❌ Error loading user game library:', error);
+        this.libraryError = 'Unable to load your game library. Please try again later.';
+        this.isLoadingLibrary = false;
+      }
+    });
+  }
+
+  getGamesOwnedCount(): number {
+    return this.userGameLibrary.length;
+  }
+
+  getRecentGames(): GameLibraryDto[] {
+    // Return the 3 most recently purchased games
+    return this.userGameLibrary
+      .sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime())
+      .slice(0, 3);
+  }
+
+  formatPurchaseDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  getInstallationStatusText(isInstalled: boolean): string {
+    return isInstalled ? 'Installed' : 'Not Installed';
+  }
+
+  getInstallationStatusClass(isInstalled: boolean): string {
+    return isInstalled
+      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+      : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+  }
+
+  toggleInstallationStatus(game: GameLibraryDto): void {
+    if (!this.currentUser) return;
+
+    const newStatus = !game.isInstalled;
+
+    this.gameLibraryService.updateInstallationStatus(
+      this.currentUser.id,
+      game.gameId,
+      newStatus
+    ).subscribe({
+      next: () => {
+        // Update the local state
+        game.isInstalled = newStatus;
+        console.log(`✅ Installation status updated for ${game.gameTitle}: ${newStatus ? 'Installed' : 'Not Installed'}`);
+      },
+      error: (error) => {
+        console.error('❌ Error updating installation status:', error);
+        // You could show a toast notification here
+      }
+    });
+  }
+
+  onImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = 'https://via.placeholder.com/300x200?text=Game+Image';
+    }
   }
 }
