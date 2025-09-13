@@ -6,6 +6,7 @@ import { UserDto } from '../../models/user.model';
 import { AdminOnlyService } from '../../services/admin-only.service';
 import { SystemHealthService, SystemHealthOverview, ApiHealth } from '../../services/system-health.service';
 import { OperationalMetricsService, OperationalMetrics } from '../../services/operational-metrics.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -43,7 +44,8 @@ export class AdminDashboardComponent implements OnInit {
     private themeService: ThemeService,
     private adminService: AdminOnlyService,
     private systemHealthService: SystemHealthService,
-    private operationalMetricsService: OperationalMetricsService
+    private operationalMetricsService: OperationalMetricsService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -167,11 +169,19 @@ export class AdminDashboardComponent implements OnInit {
     if (confirm(`Are you sure you want to delete game "${game.title}"? This action cannot be undone.`)) {
       this.adminService.deleteGame(game.id).subscribe({
         next: () => {
-          alert('Game deleted successfully!');
+          this.notificationService.showSuccess(
+            'Game Deleted',
+            `"${game.title}" has been successfully deleted from the game library.`,
+            4000
+          );
         },
         error: (error) => {
           console.error('Error deleting game:', error);
-          alert('Error deleting game: ' + (error.message || 'Unknown error'));
+          this.notificationService.showError(
+            'Delete Failed',
+            error.message || 'Failed to delete game. Please try again.',
+            5000
+          );
         }
       });
     }
@@ -180,7 +190,8 @@ export class AdminDashboardComponent implements OnInit {
   onGameSaved(game: any): void {
     this.showGameForm = false;
     this.selectedGame = null;
-    alert(`Game ${this.isGameEditMode ? 'updated' : 'created'} successfully!`);
+    // Toast notification is already handled in the game form component
+    // No need to show another notification here
   }
 
   onGameFormCancelled(): void {

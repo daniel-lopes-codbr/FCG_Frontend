@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AdminOnlyService, GameDto, CreateGameDto, UpdateGameDto } from '../../../services/admin-only.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-game-form',
@@ -25,7 +26,8 @@ export class GameFormComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private adminService: AdminOnlyService
+    private adminService: AdminOnlyService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -71,6 +73,13 @@ export class GameFormComponent implements OnInit {
     return date.toISOString().split('T')[0];
   }
 
+  private convertToUtcDateString(dateString: string): string {
+    // Convert date string from YYYY-MM-DD format to UTC ISO string
+    // This ensures the date is properly formatted for the API
+    const date = new Date(dateString + 'T00:00:00.000Z');
+    return date.toISOString();
+  }
+
   onSubmit(): void {
     if (this.gameForm.valid) {
       this.isLoading = true;
@@ -90,6 +99,11 @@ export class GameFormComponent implements OnInit {
         this.adminService.updateGame(this.game.id, updateData).subscribe({
           next: () => {
             this.isLoading = false;
+            this.notificationService.showSuccess(
+              'Game Updated!',
+              `"${updateData.title}" has been successfully updated.`,
+              4000
+            );
             // For update, we need to fetch the updated game data
             this.adminService.getGameById(this.game!.id).subscribe({
               next: (updatedGame) => {
@@ -105,6 +119,11 @@ export class GameFormComponent implements OnInit {
           error: (error) => {
             this.isLoading = false;
             this.errorMessage = error.message || 'Failed to update game';
+            this.notificationService.showError(
+              'Update Failed',
+              error.message || 'Failed to update game. Please try again.',
+              5000
+            );
           }
         });
       } else {
@@ -112,7 +131,7 @@ export class GameFormComponent implements OnInit {
           title: formData.title,
           description: formData.description,
           price: formData.price,
-          releaseDate: formData.releaseDate,
+          releaseDate: this.convertToUtcDateString(formData.releaseDate),
           genre: formData.genre,
           coverImageUrl: formData.coverImageUrl
         };
@@ -120,11 +139,21 @@ export class GameFormComponent implements OnInit {
         this.adminService.createGame(createData).subscribe({
           next: (newGame) => {
             this.isLoading = false;
+            this.notificationService.showSuccess(
+              'Game Created!',
+              `"${createData.title}" has been successfully added to the game library.`,
+              4000
+            );
             this.gameSaved.emit(newGame);
           },
           error: (error) => {
             this.isLoading = false;
             this.errorMessage = error.message || 'Failed to create game';
+            this.notificationService.showError(
+              'Creation Failed',
+              error.message || 'Failed to create game. Please try again.',
+              5000
+            );
           }
         });
       }
