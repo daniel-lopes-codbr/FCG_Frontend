@@ -54,8 +54,8 @@ export class SystemHealthService {
     },
     {
       name: 'Payments API',
-      baseUrl: 'http://localhost:5043/api',
-      healthUrl: 'http://localhost:5043/api/health',
+      baseUrl: 'http://localhost:5013/api',
+      healthUrl: 'http://localhost:5013/api/health',
       authType: 'apikey' as const
     }
   ];
