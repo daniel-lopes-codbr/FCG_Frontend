@@ -139,7 +139,7 @@ export class CheckoutService {
       name: game.title,
       description: game.description,
       price: game.price,
-      currency: 'USD',
+      currency: 'BRL',
       externalProductId: game.id,
       imageUrl: game.coverImageUrl
     };

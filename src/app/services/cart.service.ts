@@ -78,9 +78,9 @@ export class CartService {
   // Get cart total as formatted string
   getCartTotalFormatted(): string {
     const total = this.getCartTotal();
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'BRL'
     }).format(total);
   }
 }

@@ -56,7 +56,7 @@ export interface CheckoutSessionDto {
   providedIn: 'root'
 })
 export class PaymentService {
-  private readonly API_BASE_URL = 'http://localhost:5013/api'; // FCG_MS_Payments API
+  private readonly API_BASE_URL = 'http://localhost:5012/api'; // FCG_MS_Payments API
 
   constructor(private http: HttpClient) {}
 
