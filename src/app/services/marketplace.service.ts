@@ -17,7 +17,7 @@ export interface GameDto {
   providedIn: 'root'
 })
 export class MarketplaceService {
-  private readonly API_BASE_URL = 'http://localhost:3001/api';
+  private readonly API_BASE_URL = 'http://localhost:5011/api';
 
   constructor(private http: HttpClient) {}
 

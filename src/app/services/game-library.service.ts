@@ -17,7 +17,7 @@ export interface GameLibraryDto {
   providedIn: 'root'
 })
 export class GameLibraryService {
-  private readonly API_BASE_URL = 'http://localhost:3001/api';
+  private readonly API_BASE_URL = 'http://localhost:5011/api';
 
   constructor(private http: HttpClient) { }
 
@@ -28,11 +28,23 @@ export class GameLibraryService {
    * @returns Observable<GameLibraryDto> The created library entry
    */
   registerPurchase(userId: string, gameId: string): Observable<GameLibraryDto> {
+    const url = `${this.API_BASE_URL}/users/${userId}/library?gameId=${gameId}`;
+    console.log('🌐 GameLibraryService.registerPurchase called');
+    console.log('📝 User ID:', userId);
+    console.log('📝 Game ID:', gameId);
+    console.log('🔗 URL:', url);
+
+    const headers = this.getHeaders();
+    console.log('🔑 Headers:', {
+      'Content-Type': headers.get('Content-Type'),
+      'Authorization': headers.get('Authorization') ? 'Bearer [TOKEN]' : 'No token'
+    });
+
     return this.http.post<GameLibraryDto>(
-      `${this.API_BASE_URL}/users/${userId}/library?gameId=${gameId}`,
+      url,
       null, // No request body needed
       {
-        headers: this.getHeaders()
+        headers: headers
       }
     ).pipe(
       timeout(10000),
@@ -97,9 +109,28 @@ export class GameLibraryService {
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('jwt_token');
+    console.log('🔑 Raw JWT token from localStorage:', token);
+    
     if (!token) {
+      console.error('❌ No JWT token found in localStorage');
       throw new Error('No authentication token found');
     }
+    
+    // Decode JWT token to check if it's valid
+    try {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1]));
+        console.log('🔑 JWT payload:', payload);
+        console.log('🔑 JWT expiration:', new Date(payload.exp * 1000));
+        console.log('🔑 JWT is expired:', new Date(payload.exp * 1000) < new Date());
+      } else {
+        console.error('❌ Invalid JWT token format');
+      }
+    } catch (error) {
+      console.error('❌ Error decoding JWT token:', error);
+    }
+    
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
@@ -107,7 +138,13 @@ export class GameLibraryService {
   }
 
   private handleError = (error: HttpErrorResponse): Observable<never> => {
-    console.error('Game Library service error:', error);
+    console.error('❌ Game Library service error:', error);
+    console.error('❌ Error status:', error.status);
+    console.error('❌ Error statusText:', error.statusText);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error error:', error.error);
+    console.error('❌ Error url:', error.url);
+    console.error('❌ Error headers:', error.headers);
 
     let errorMessage = 'An error occurred';
 
@@ -122,6 +159,8 @@ export class GameLibraryService {
     } else if (error.status >= 500) {
       errorMessage = 'Server error. Please try again later.';
     }
+
+    console.error('❌ Final error message:', errorMessage);
 
     // Preserve the original error status for the calling code
     const customError = new Error(errorMessage);

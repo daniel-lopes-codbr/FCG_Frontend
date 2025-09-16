@@ -42,14 +42,14 @@ export class SystemHealthService {
   private readonly API_ENDPOINTS = [
     {
       name: 'User Management API',
-      baseUrl: 'http://localhost:3002/api',
-      healthUrl: 'http://localhost:3002/api/health',
+      baseUrl: 'http://localhost:5010/api',
+      healthUrl: 'http://localhost:5010/api/health',
       authType: 'jwt' as const
     },
     {
       name: 'Game Library API',
-      baseUrl: 'http://localhost:3001/api',
-      healthUrl: 'http://localhost:3001/api/health',
+      baseUrl: 'http://localhost:5011/api',
+      healthUrl: 'http://localhost:5011/api/health',
       authType: 'jwt' as const
     },
     {

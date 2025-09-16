@@ -8,12 +8,16 @@ import { RegisterUserDto, LoginDto, UserDto, AuthResponse } from '../models/user
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_BASE_URL = 'http://localhost:3002/api';
+  private readonly API_BASE_URL = 'http://localhost:5010/api';
   private currentUserSubject = new BehaviorSubject<UserDto | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) {
     this.loadStoredUser();
+
+    // Make debug methods available globally for console access
+    (window as any).clearUserData = () => this.clearAllData();
+    (window as any).debugUserData = () => this.debugStoredData();
   }
 
   private getHeaders(): HttpHeaders {
@@ -66,12 +70,7 @@ export class AuthService {
       }),
       responseType: 'text'
     }).pipe(
-      tap(response => {
-        console.log('Raw HTTP response:', response);
-        console.log('Response type:', typeof response);
-      }),
       switchMap((response: string) => {
-        console.log('Login response:', response); // Debug log
 
         // Check if it's an error message
         if (response.includes('User does not exist') ||
@@ -82,13 +81,18 @@ export class AuthService {
 
         // API returns just the token string
         const token = response;
+        console.log('🎫 Token received, storing in localStorage');
         this.setToken(token);
 
         // Fetch user details with the new token
+        console.log('👤 Fetching user details with token...');
         return this.getCurrentUserWithToken(token).pipe(
-          map(user => ({ token, user })),
+          map(user => {
+            console.log('✅ User details fetched successfully:', user);
+            return { token, user };
+          }),
           catchError(error => {
-            console.error('Error fetching user details:', error);
+            console.error('❌ Error fetching user details:', error);
             throw error;
           })
         );
@@ -129,30 +133,34 @@ export class AuthService {
       'Authorization': `Bearer ${token}`
     });
 
-    console.log('Fetching user with token:', token); // Debug log
-
     // Decode the JWT token to get user information
     const payload = JSON.parse(atob(token.split('.')[1]));
-    console.log('JWT payload:', payload);
 
-    // Extract user ID from JWT token (preferred) or email as fallback
+    // Extract user ID from JWT token (preferred) or name as fallback
     const userId = payload.sub || payload.user_id || payload.id;
-    const email = payload.email || payload.unique_name;
+    const email = payload.email;
+    const name = payload.unique_name;
 
-    if (!userId && !email) {
-      return throwError(() => new Error('User ID or email not found in JWT token'));
+    if (!userId && !email && !name) {
+      return throwError(() => new Error('User ID, email, or name not found in JWT token'));
     }
 
-    // Use the user ID endpoint if available, otherwise fall back to email search
-    const endpoint = userId
-      ? `${this.API_BASE_URL}/user/id?id=${userId}`
-      : `${this.API_BASE_URL}/user?email=${encodeURIComponent(email)}`;
+    // Use the user ID endpoint if available, otherwise fall back to email or name search
+    let endpoint;
+    if (userId) {
+      endpoint = `${this.API_BASE_URL}/user/id?id=${userId}`;
+    } else if (email) {
+      endpoint = `${this.API_BASE_URL}/user?email=${encodeURIComponent(email)}`;
+    } else if (name) {
+      endpoint = `${this.API_BASE_URL}/user?name=${encodeURIComponent(name)}`;
+    } else {
+      return throwError(() => new Error('No valid user identifier found in JWT token'));
+    }
 
     return this.http.get(endpoint, {
       headers: headers
     }).pipe(
       map((response: any) => {
-        console.log('User response:', response); // Debug log
 
         let userData;
 
@@ -197,6 +205,63 @@ export class AuthService {
     this.removeToken();
     localStorage.removeItem('current_user');
     this.currentUserSubject.next(null);
+  }
+
+  /**
+   * Validates if the current user exists in the Game Library API
+   * If not, clears the session and redirects to login
+   */
+  validateUserInGameLibrary(): Observable<boolean> {
+    const currentUser = this.getCurrentUserValue();
+    if (!currentUser) {
+      return of(false);
+    }
+
+    // Import GameLibraryService dynamically to avoid circular dependency
+    return this.http.get(`${this.API_BASE_URL.replace('/user', '')}/users/${currentUser.id}/library`, {
+      headers: this.getHeaders()
+    }).pipe(
+      map(() => true), // User exists
+      catchError(error => {
+        if (error.status === 404) {
+          console.log('🔄 User not found in Game Library API, clearing session');
+          this.logout();
+          return of(false);
+        }
+        return of(true); // Other errors, assume user exists
+      })
+    );
+  }
+
+  /**
+   * Clears all stored data (useful for debugging)
+   */
+  clearAllData(): void {
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('current_user');
+    this.currentUserSubject.next(null);
+    console.log('🧹 All user data cleared from localStorage');
+  }
+
+  /**
+   * Debug method to show current stored data
+   */
+  debugStoredData(): void {
+    const token = localStorage.getItem('jwt_token');
+    const user = localStorage.getItem('current_user');
+
+    console.log('🔍 Current stored data:');
+    console.log('JWT Token:', token ? 'Present' : 'Not found');
+    console.log('Current User:', user ? JSON.parse(user) : 'Not found');
+
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        console.log('JWT Payload:', payload);
+      } catch (e) {
+        console.log('JWT Token is invalid');
+      }
+    }
   }
 
   isAuthenticated(): boolean {

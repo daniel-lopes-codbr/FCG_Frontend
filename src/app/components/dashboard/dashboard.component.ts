@@ -43,12 +43,16 @@ export class DashboardComponent implements OnInit {
     if (!this.currentUser) {
       this.router.navigate(['/login']);
     } else {
-      // Load appropriate data based on user type
-      if (this.currentUser.permission === 'Admin') {
-        this.loadBusinessMetrics();
-      } else {
-        this.loadUserGameLibrary();
-      }
+      // TEMPORARILY DISABLED: Focus on login first, then we'll re-enable dashboard features
+      console.log('✅ User logged in successfully:', this.currentUser.name, '(' + this.currentUser.permission + ')');
+      console.log('📋 Dashboard features temporarily disabled - focusing on login functionality');
+
+      // TODO: Re-enable these after login is working properly
+      // if (this.currentUser && this.currentUser.permission === 'Admin') {
+      //   this.loadBusinessMetrics();
+      // } else if (this.currentUser) {
+      //   this.loadUserGameLibrary();
+      // }
     }
   }
 
@@ -120,6 +124,16 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('❌ Error loading user game library:', error);
+
+        // If user not found in Game Library API, handle gracefully for MVP
+        if (error.status === 404) {
+          console.log('⚠️ User not found in Game Library API - showing empty library for MVP');
+          this.userGameLibrary = []; // Show empty library instead of error
+          this.libraryError = ''; // No error message
+          this.isLoadingLibrary = false;
+          return;
+        }
+
         this.libraryError = 'Unable to load your game library. Please try again later.';
         this.isLoadingLibrary = false;
       }

@@ -13,8 +13,11 @@ export interface CartItem {
 export class CartService {
   private cartItemsSubject = new BehaviorSubject<CartItem[]>([]);
   public cartItems$ = this.cartItemsSubject.asObservable();
+  private readonly CART_STORAGE_KEY = 'fcg_cart_items';
 
-  constructor() {}
+  constructor() {
+    this.loadCartFromStorage();
+  }
 
   // Get current cart items
   getCartItems(): CartItem[] {
@@ -43,19 +46,19 @@ export class CartService {
     };
 
     const updatedItems = [...currentItems, newItem];
-    this.cartItemsSubject.next(updatedItems);
+    this.updateCart(updatedItems);
   }
 
   // Remove game from cart
   removeFromCart(gameId: string): void {
     const currentItems = this.cartItemsSubject.value;
     const updatedItems = currentItems.filter(item => item.game.id !== gameId);
-    this.cartItemsSubject.next(updatedItems);
+    this.updateCart(updatedItems);
   }
 
   // Clear entire cart
   clearCart(): void {
-    this.cartItemsSubject.next([]);
+    this.updateCart([]);
   }
 
   // Get total number of items in cart
@@ -82,5 +85,37 @@ export class CartService {
       style: 'currency',
       currency: 'BRL'
     }).format(total);
+  }
+
+  // Load cart from localStorage
+  private loadCartFromStorage(): void {
+    try {
+      const storedCart = localStorage.getItem(this.CART_STORAGE_KEY);
+      if (storedCart) {
+        const cartItems: CartItem[] = JSON.parse(storedCart);
+        console.log('🛒 Loading cart from localStorage:', cartItems);
+        this.cartItemsSubject.next(cartItems);
+      }
+    } catch (error) {
+      console.error('❌ Error loading cart from localStorage:', error);
+      this.cartItemsSubject.next([]);
+    }
+  }
+
+  // Save cart to localStorage
+  private saveCartToStorage(): void {
+    try {
+      const cartItems = this.cartItemsSubject.value;
+      console.log('💾 Saving cart to localStorage:', cartItems);
+      localStorage.setItem(this.CART_STORAGE_KEY, JSON.stringify(cartItems));
+    } catch (error) {
+      console.error('❌ Error saving cart to localStorage:', error);
+    }
+  }
+
+  // Update cart and save to storage
+  private updateCart(items: CartItem[]): void {
+    this.cartItemsSubject.next(items);
+    this.saveCartToStorage();
   }
 }

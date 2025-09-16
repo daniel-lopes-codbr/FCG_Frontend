@@ -172,34 +172,59 @@ export class CheckoutService {
    * @returns Observable<boolean> True if all purchases were registered successfully
    */
   registerPurchases(userId: string, gameIds: string[]): Observable<boolean> {
+    console.log('🔄 CheckoutService.registerPurchases called');
+    console.log('📝 User ID:', userId);
+    console.log('📝 Game IDs:', gameIds);
+
     if (!gameIds || gameIds.length === 0) {
+      console.log('⚠️ No game IDs provided, returning true');
       return of(true);
     }
 
+    console.log('🚀 Starting parallel registration of', gameIds.length, 'games');
+
     // Register all purchases in parallel
-    const registrationObservables = gameIds.map(gameId =>
-      this.gameLibraryService.registerPurchase(userId, gameId).pipe(
-        map(() => {
+    const registrationObservables = gameIds.map(gameId => {
+      console.log(`🎮 Registering game ${gameId} for user ${userId}`);
+      return this.gameLibraryService.registerPurchase(userId, gameId).pipe(
+        map((result) => {
+          console.log(`✅ Successfully registered game ${gameId}:`, result);
           return true;
         }),
         catchError(error => {
           console.error(`❌ Failed to register purchase for game ${gameId}:`, error);
+          console.error(`❌ Error details for game ${gameId}:`, {
+            message: error.message,
+            status: error.status,
+            statusText: error.statusText,
+            error: error.error
+          });
           // For MVP, we'll continue even if some registrations fail
           return of(false);
         })
-      )
-    );
+      );
+    });
 
     return forkJoin(registrationObservables).pipe(
       map(results => {
         const successCount = results.filter(r => r).length;
         const totalCount = results.length;
 
+        console.log(`📊 Registration results: ${successCount}/${totalCount} successful`);
+
         // For MVP, we consider it successful if at least one purchase was registered
-        return successCount > 0;
+        const finalResult = successCount > 0;
+        console.log('🎯 Final registration result:', finalResult);
+        return finalResult;
       }),
       catchError(error => {
         console.error('❌ Error during purchase registration:', error);
+        console.error('❌ ForkJoin error details:', {
+          message: error.message,
+          status: error.status,
+          statusText: error.statusText,
+          error: error.error
+        });
         // For MVP, we don't want to fail the entire flow if registration fails
         return of(false);
       })
@@ -214,12 +239,20 @@ export class CheckoutService {
    * @returns Observable<boolean> True if all purchases were registered successfully
    */
   handleSuccessfulPayment(userId: string, purchasedGameIds: string[]): Observable<boolean> {
+    console.log('🎯 CheckoutService.handleSuccessfulPayment called');
+    console.log('📝 User ID:', userId);
+    console.log('📝 Game IDs:', purchasedGameIds);
+    
     // Register the purchases in the Game Library first
     return this.registerPurchases(userId, purchasedGameIds).pipe(
       map(success => {
+        console.log('🎯 Registration completed, success:', success);
         // Clear the cart only after successful registration
         if (success) {
+          console.log('🧹 Clearing cart after successful registration');
           this.cartService.clearCart();
+        } else {
+          console.log('⚠️ Not clearing cart due to registration failure');
         }
         return success;
       })

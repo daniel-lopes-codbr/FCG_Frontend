@@ -67,8 +67,8 @@ export interface PaginatedResponse<T> {
   providedIn: 'root'
 })
 export class AdminService {
-  private readonly USER_API_BASE_URL = 'http://localhost:3002/api';
-  private readonly GAME_API_BASE_URL = 'http://localhost:3001/api';
+  private readonly USER_API_BASE_URL = 'http://localhost:5010/api';
+  private readonly GAME_API_BASE_URL = 'http://localhost:5011/api';
 
   constructor(private http: HttpClient) {}
 

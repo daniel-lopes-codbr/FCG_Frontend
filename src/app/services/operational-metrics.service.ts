@@ -27,8 +27,8 @@ export interface OperationalMetrics {
   providedIn: 'root'
 })
 export class OperationalMetricsService {
-  private readonly USER_API_BASE_URL = 'http://localhost:3002/api';
-  private readonly GAME_LIBRARY_API_BASE_URL = 'http://localhost:3001/api';
+  private readonly USER_API_BASE_URL = 'http://localhost:5010/api';
+  private readonly GAME_LIBRARY_API_BASE_URL = 'http://localhost:5011/api';
 
   constructor(
     private http: HttpClient,
