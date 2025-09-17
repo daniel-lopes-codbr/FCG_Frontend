@@ -3,21 +3,30 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
 import { map, catchError, tap, switchMap } from 'rxjs/operators';
 import { RegisterUserDto, LoginDto, UserDto, AuthResponse } from '../models/user.model';
+import { ConfigService } from './config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_BASE_URL = 'http://localhost:5010/api';
   private currentUserSubject = new BehaviorSubject<UserDto | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     this.loadStoredUser();
 
     // Make debug methods available globally for console access
     (window as any).clearUserData = () => this.clearAllData();
     (window as any).debugUserData = () => this.debugStoredData();
+  }
+
+  private getApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('userApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5010/api';
+    }
   }
 
   private getHeaders(): HttpHeaders {
@@ -53,7 +62,7 @@ export class AuthService {
   }
 
   register(userData: RegisterUserDto): Observable<any> {
-    return this.http.post(`${this.API_BASE_URL}/user/register`, userData, {
+    return this.http.post(`${this.getApiBaseUrl()}/user/register`, userData, {
       headers: this.getHeaders()
     }).pipe(
       catchError(this.handleError)
@@ -62,9 +71,9 @@ export class AuthService {
 
   login(credentials: LoginDto): Observable<AuthResponse> {
     console.log('Attempting login with credentials:', credentials);
-    console.log('API URL:', `${this.API_BASE_URL}/userauthorization/token`);
+    console.log('API URL:', `${this.getApiBaseUrl()}/userauthorization/token`);
 
-    return this.http.post(`${this.API_BASE_URL}/userauthorization/token`, credentials, {
+    return this.http.post(`${this.getApiBaseUrl()}/userauthorization/token`, credentials, {
       headers: new HttpHeaders({
         'Content-Type': 'application/json'
       }),
@@ -109,7 +118,7 @@ export class AuthService {
   }
 
   getCurrentUser(): Observable<UserDto> {
-    return this.http.get(`${this.API_BASE_URL}/user/id`, {
+    return this.http.get(`${this.getApiBaseUrl()}/user/id`, {
       headers: this.getHeaders()
     }).pipe(
       map((response: any) => {
@@ -148,11 +157,11 @@ export class AuthService {
     // Use the user ID endpoint if available, otherwise fall back to email or name search
     let endpoint;
     if (userId) {
-      endpoint = `${this.API_BASE_URL}/user/id?id=${userId}`;
+      endpoint = `${this.getApiBaseUrl()}/user/id?id=${userId}`;
     } else if (email) {
-      endpoint = `${this.API_BASE_URL}/user?email=${encodeURIComponent(email)}`;
+      endpoint = `${this.getApiBaseUrl()}/user?email=${encodeURIComponent(email)}`;
     } else if (name) {
-      endpoint = `${this.API_BASE_URL}/user?name=${encodeURIComponent(name)}`;
+      endpoint = `${this.getApiBaseUrl()}/user?name=${encodeURIComponent(name)}`;
     } else {
       return throwError(() => new Error('No valid user identifier found in JWT token'));
     }
@@ -194,7 +203,7 @@ export class AuthService {
   }
 
   updateUser(userData: any): Observable<any> {
-    return this.http.put(`${this.API_BASE_URL}/user`, userData, {
+    return this.http.put(`${this.getApiBaseUrl()}/user`, userData, {
       headers: this.getHeaders()
     }).pipe(
       catchError(this.handleError)
@@ -218,7 +227,7 @@ export class AuthService {
     }
 
     // Import GameLibraryService dynamically to avoid circular dependency
-    return this.http.get(`${this.API_BASE_URL.replace('/user', '')}/users/${currentUser.id}/library`, {
+    return this.http.get(`${this.configService.getApiUrl('gameLibraryApi')}/api/users/${currentUser.id}/library`, {
       headers: this.getHeaders()
     }).pipe(
       map(() => true), // User exists

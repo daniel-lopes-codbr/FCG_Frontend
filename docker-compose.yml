@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: fcg-frontend:latest
+    container_name: fcg_frontend
+    environment:
+      - USER_API_URL=http://localhost:5010
+      - GAME_LIBRARY_API_URL=http://localhost:5011
+      - PAYMENTS_API_URL=http://localhost:5012
+    ports:
+      - "4200:80"
+    networks:
+      - fcg_network
+    restart: unless-stopped
+
+networks:
+  fcg_network:
+    external: true
+    name: fcg_network

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, timeout } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { ConfigService } from './config.service';
 
 export interface GameLibraryDto {
   id: string;
@@ -17,9 +18,16 @@ export interface GameLibraryDto {
   providedIn: 'root'
 })
 export class GameLibraryService {
-  private readonly API_BASE_URL = 'http://localhost:5011/api';
+  constructor(private http: HttpClient, private configService: ConfigService) { }
 
-  constructor(private http: HttpClient) { }
+  private getApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('gameLibraryApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5011/api';
+    }
+  }
 
   /**
    * Register a game purchase in the user's library
@@ -28,7 +36,7 @@ export class GameLibraryService {
    * @returns Observable<GameLibraryDto> The created library entry
    */
   registerPurchase(userId: string, gameId: string): Observable<GameLibraryDto> {
-    const url = `${this.API_BASE_URL}/users/${userId}/library?gameId=${gameId}`;
+    const url = `${this.getApiBaseUrl()}/users/${userId}/library?gameId=${gameId}`;
     console.log('🌐 GameLibraryService.registerPurchase called');
     console.log('📝 User ID:', userId);
     console.log('📝 Game ID:', gameId);
@@ -59,7 +67,7 @@ export class GameLibraryService {
    */
   getUserLibrary(userId: string): Observable<GameLibraryDto[]> {
     return this.http.get<GameLibraryDto[]>(
-      `${this.API_BASE_URL}/users/${userId}/library`,
+      `${this.getApiBaseUrl()}/users/${userId}/library`,
       {
         headers: this.getHeaders()
       }
@@ -77,7 +85,7 @@ export class GameLibraryService {
    */
   getGameLibraryEntry(userId: string, gameId: string): Observable<GameLibraryDto> {
     return this.http.get<GameLibraryDto>(
-      `${this.API_BASE_URL}/users/${userId}/library/${gameId}`,
+      `${this.getApiBaseUrl()}/users/${userId}/library/${gameId}`,
       {
         headers: this.getHeaders()
       }
@@ -96,7 +104,7 @@ export class GameLibraryService {
    */
   updateInstallationStatus(userId: string, gameId: string, isInstalled: boolean): Observable<void> {
     return this.http.patch<void>(
-      `${this.API_BASE_URL}/users/${userId}/library/${gameId}/installation?installationStatus=${isInstalled}`,
+      `${this.getApiBaseUrl()}/users/${userId}/library/${gameId}/installation?installationStatus=${isInstalled}`,
       null,
       {
         headers: this.getHeaders()

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, timeout } from 'rxjs/operators';
+import { ConfigService } from './config.service';
 
 export interface GameDto {
   id: string;
@@ -17,9 +18,16 @@ export interface GameDto {
   providedIn: 'root'
 })
 export class MarketplaceService {
-  private readonly API_BASE_URL = 'http://localhost:5011/api';
+  constructor(private http: HttpClient, private configService: ConfigService) {}
 
-  constructor(private http: HttpClient) {}
+  private getApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('gameLibraryApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5011/api';
+    }
+  }
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('jwt_token');
@@ -33,7 +41,7 @@ export class MarketplaceService {
   }
 
   getGames(): Observable<GameDto[]> {
-    return this.http.get<GameDto[]>(`${this.API_BASE_URL}/games`, {
+    return this.http.get<GameDto[]>(`${this.getApiBaseUrl()}/games`, {
       headers: this.getHeaders()
     }).pipe(
       timeout(10000),
@@ -42,7 +50,7 @@ export class MarketplaceService {
   }
 
   getGameById(id: string): Observable<GameDto> {
-    return this.http.get<GameDto>(`${this.API_BASE_URL}/games/${id}`, {
+    return this.http.get<GameDto>(`${this.getApiBaseUrl()}/games/${id}`, {
       headers: this.getHeaders()
     }).pipe(
       timeout(10000),
@@ -51,7 +59,7 @@ export class MarketplaceService {
   }
 
   getGamesByGenre(genre: string): Observable<GameDto[]> {
-    return this.http.get<GameDto[]>(`${this.API_BASE_URL}/games/genre/${genre}`, {
+    return this.http.get<GameDto[]>(`${this.getApiBaseUrl()}/games/genre/${genre}`, {
       headers: this.getHeaders()
     }).pipe(
       timeout(10000),
