@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, timeout } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { ConfigService } from './config.service';
 
 // DTOs for FCG_MS_Payments API
 export interface CreateProductDto {
@@ -56,9 +57,16 @@ export interface CheckoutSessionDto {
   providedIn: 'root'
 })
 export class PaymentService {
-  private readonly API_BASE_URL = 'http://localhost:5012/api'; // FCG_MS_Payments API
+  constructor(private http: HttpClient, private configService: ConfigService) {}
 
-  constructor(private http: HttpClient) {}
+  private getApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('paymentsApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5012/api';
+    }
+  }
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('jwt_token');
@@ -74,7 +82,7 @@ export class PaymentService {
 
   // Customer Management Methods
   getCustomerByExternalId(externalCustomerId: string): Observable<CustomerDto> {
-    return this.http.get<CustomerDto>(`${this.API_BASE_URL}/customers/${externalCustomerId}`, {
+    return this.http.get<CustomerDto>(`${this.getApiBaseUrl()}/customers/${externalCustomerId}`, {
       headers: this.getHeaders()
     }).pipe(
       timeout(10000),
@@ -83,7 +91,7 @@ export class PaymentService {
   }
 
   createCustomer(customerData: CreateCustomerDto): Observable<CustomerDto> {
-    return this.http.post<CustomerDto>(`${this.API_BASE_URL}/customers`, customerData, {
+    return this.http.post<CustomerDto>(`${this.getApiBaseUrl()}/customers`, customerData, {
       headers: this.getHeaders()
     }).pipe(
       timeout(10000),
@@ -93,7 +101,7 @@ export class PaymentService {
 
   // Product Management Methods
   getProductByExternalId(externalProductId: string): Observable<ProductDto> {
-    return this.http.get<ProductDto>(`${this.API_BASE_URL}/products/${externalProductId}`, {
+    return this.http.get<ProductDto>(`${this.getApiBaseUrl()}/products/${externalProductId}`, {
       headers: this.getHeaders()
     }).pipe(
       timeout(10000),
@@ -102,7 +110,7 @@ export class PaymentService {
   }
 
   createProduct(productData: CreateProductDto): Observable<ProductDto> {
-    return this.http.post<ProductDto>(`${this.API_BASE_URL}/products`, productData, {
+    return this.http.post<ProductDto>(`${this.getApiBaseUrl()}/products`, productData, {
       headers: this.getHeaders()
     }).pipe(
       timeout(10000),
@@ -123,7 +131,7 @@ export class PaymentService {
       quantity: quantity
     };
 
-    return this.http.post<CheckoutSessionDto>(`${this.API_BASE_URL}/checkout`, checkoutData, {
+    return this.http.post<CheckoutSessionDto>(`${this.getApiBaseUrl()}/checkout`, checkoutData, {
       headers: this.getHeaders()
     }).pipe(
       timeout(10000),

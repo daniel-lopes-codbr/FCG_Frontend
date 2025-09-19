@@ -4,6 +4,7 @@ import { Observable, throwError, forkJoin, of } from 'rxjs';
 import { map, catchError, timeout } from 'rxjs/operators';
 import { AdminOnlyService } from './admin-only.service';
 import { MarketplaceService } from './marketplace.service';
+import { ConfigService } from './config.service';
 
 export interface RecentActivity {
   type: 'user_registration' | 'game_addition' | 'purchase' | 'system_event';
@@ -27,14 +28,30 @@ export interface OperationalMetrics {
   providedIn: 'root'
 })
 export class OperationalMetricsService {
-  private readonly USER_API_BASE_URL = 'http://localhost:5010/api';
-  private readonly GAME_LIBRARY_API_BASE_URL = 'http://localhost:5011/api';
-
   constructor(
     private http: HttpClient,
     private adminOnlyService: AdminOnlyService,
-    private marketplaceService: MarketplaceService
+    private marketplaceService: MarketplaceService,
+    private configService: ConfigService
   ) { }
+
+  private getUserApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('userApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5010/api';
+    }
+  }
+
+  private getGameLibraryApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('gameLibraryApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5011/api';
+    }
+  }
 
   /**
    * Get comprehensive operational metrics

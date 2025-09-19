@@ -5,6 +5,7 @@ import { map, catchError, timeout, switchMap } from 'rxjs/operators';
 import { AdminOnlyService } from './admin-only.service';
 import { MarketplaceService } from './marketplace.service';
 import { GameLibraryService } from './game-library.service';
+import { ConfigService } from './config.service';
 
 export interface BusinessMetrics {
   totalUsers: number;
@@ -17,15 +18,31 @@ export interface BusinessMetrics {
   providedIn: 'root'
 })
 export class BusinessMetricsService {
-  private readonly USER_API_BASE_URL = 'http://localhost:5010/api';
-  private readonly GAME_LIBRARY_API_BASE_URL = 'http://localhost:5011/api';
-
   constructor(
     private http: HttpClient,
     private adminOnlyService: AdminOnlyService,
     private marketplaceService: MarketplaceService,
-    private gameLibraryService: GameLibraryService
+    private gameLibraryService: GameLibraryService,
+    private configService: ConfigService
   ) {}
+
+  private getUserApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('userApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5010/api';
+    }
+  }
+
+  private getGameLibraryApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('gameLibraryApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5011/api';
+    }
+  }
 
   /**
    * Get comprehensive business metrics for admin dashboard

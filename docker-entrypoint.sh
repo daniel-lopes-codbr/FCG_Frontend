@@ -9,7 +9,7 @@ cat > /usr/share/nginx/html/assets/config.json << EOF
   "apiUrls": {
     "userApi": "${USER_API_URL:-http://localhost:5010}",
     "gameLibraryApi": "${GAME_LIBRARY_API_URL:-http://localhost:5011}",
-    "paymentsApi": "${PAYMENTS_API_URL:-http://localhost:5000}"
+    "paymentsApi": "${PAYMENTS_API_URL:-http://localhost:5012}"
   }
 }
 EOF

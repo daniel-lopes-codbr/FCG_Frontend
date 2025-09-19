@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, forkJoin, of } from 'rxjs';
 import { map, catchError, timeout } from 'rxjs/operators';
+import { ConfigService } from './config.service';
 
 export interface HealthCheck {
   name: string;
@@ -39,35 +40,65 @@ export interface SystemHealthOverview {
   providedIn: 'root'
 })
 export class SystemHealthService {
-  private readonly API_ENDPOINTS = [
-    {
-      name: 'User Management API',
-      baseUrl: 'http://localhost:5010/api',
-      healthUrl: 'http://localhost:5010/api/health',
-      authType: 'jwt' as const
-    },
-    {
-      name: 'Game Library API',
-      baseUrl: 'http://localhost:5011/api',
-      healthUrl: 'http://localhost:5011/api/health',
-      authType: 'jwt' as const
-    },
-    {
-      name: 'Payments API',
-      baseUrl: 'http://localhost:5012/api',
-      healthUrl: 'http://localhost:5012/api/health',
-      authType: 'apikey' as const
-    }
-  ];
+  constructor(private http: HttpClient, private configService: ConfigService) { }
 
-  constructor(private http: HttpClient) { }
+  private getApiEndpoints() {
+    return [
+      {
+        name: 'User Management API',
+        baseUrl: this.getUserApiBaseUrl(),
+        healthUrl: this.getUserApiBaseUrl() + '/health',
+        authType: 'jwt' as const
+      },
+      {
+        name: 'Game Library API',
+        baseUrl: this.getGameLibraryApiBaseUrl(),
+        healthUrl: this.getGameLibraryApiBaseUrl() + '/health',
+        authType: 'jwt' as const
+      },
+      {
+        name: 'Payments API',
+        baseUrl: this.getPaymentsApiBaseUrl(),
+        healthUrl: this.getPaymentsApiBaseUrl() + '/health',
+        authType: 'apikey' as const
+      }
+    ];
+  }
+
+  private getUserApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('userApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5010/api';
+    }
+  }
+
+  private getGameLibraryApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('gameLibraryApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5011/api';
+    }
+  }
+
+  private getPaymentsApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('paymentsApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5012/api';
+    }
+  }
 
   /**
    * Get comprehensive system health overview
    * @returns Observable<SystemHealthOverview> Complete system health status
    */
   getSystemHealthOverview(): Observable<SystemHealthOverview> {
-    const healthChecks = this.API_ENDPOINTS.map(endpoint =>
+    const apiEndpoints = this.getApiEndpoints();
+    const healthChecks = apiEndpoints.map(endpoint =>
       this.checkApiHealth(endpoint.name, endpoint.healthUrl, endpoint.authType)
     );
 
@@ -106,9 +137,9 @@ export class SystemHealthService {
         return of({
           overallStatus: 'unhealthy' as const,
           apis: [],
-          totalApis: this.API_ENDPOINTS.length,
+          totalApis: this.getApiEndpoints().length,
           healthyApis: 0,
-          unhealthyApis: this.API_ENDPOINTS.length,
+          unhealthyApis: this.getApiEndpoints().length,
           averageResponseTime: 0,
           lastUpdated: new Date()
         } as SystemHealthOverview);
@@ -163,7 +194,8 @@ export class SystemHealthService {
    * @returns Observable<ApiHealth> Specific API health
    */
   getApiHealth(apiName: string): Observable<ApiHealth> {
-    const endpoint = this.API_ENDPOINTS.find(ep => ep.name === apiName);
+    const apiEndpoints = this.getApiEndpoints();
+    const endpoint = apiEndpoints.find(ep => ep.name === apiName);
     if (!endpoint) {
       return throwError(() => new Error(`API ${apiName} not found`));
     }
@@ -176,7 +208,7 @@ export class SystemHealthService {
    * @returns Array of API endpoint information
    */
   getAvailableApis(): Array<{name: string, baseUrl: string, healthUrl: string}> {
-    return this.API_ENDPOINTS;
+    return this.getApiEndpoints();
   }
 
   /**

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError, timeout, of } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
+import { ConfigService } from './config.service';
 
 export interface UserDto {
   id: string;
@@ -67,10 +68,25 @@ export interface PaginatedResponse<T> {
   providedIn: 'root'
 })
 export class AdminService {
-  private readonly USER_API_BASE_URL = 'http://localhost:5010/api';
-  private readonly GAME_API_BASE_URL = 'http://localhost:5011/api';
+  constructor(private http: HttpClient, private configService: ConfigService) {}
 
-  constructor(private http: HttpClient) {}
+  private getUserApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('userApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5010/api';
+    }
+  }
+
+  private getGameApiBaseUrl(): string {
+    try {
+      return this.configService.getApiUrl('gameLibraryApi') + '/api';
+    } catch (error) {
+      // Fallback to localhost if config not loaded yet
+      return 'http://localhost:5011/api';
+    }
+  }
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('jwt_token');
@@ -82,7 +98,7 @@ export class AdminService {
 
   // User Management Methods
   createUser(userData: CreateUserDto): Observable<UserDto> {
-    return this.http.post(`${this.USER_API_BASE_URL}/user/register`, userData, {
+    return this.http.post(`${this.getUserApiBaseUrl()}/user/register`, userData, {
       headers: this.getHeaders()
     }).pipe(
       map((response: any) => ({
@@ -103,7 +119,7 @@ export class AdminService {
     if (email) params = params.set('email', email);
     if (name) params = params.set('name', name);
 
-    return this.http.get(`${this.USER_API_BASE_URL}/user`, {
+    return this.http.get(`${this.getUserApiBaseUrl()}/user`, {
       headers: this.getHeaders(),
       params: params
     }).pipe(
@@ -128,7 +144,7 @@ export class AdminService {
   }
 
   getUserById(id: string): Observable<UserDto> {
-    return this.http.get(`${this.USER_API_BASE_URL}/user/id?id=${id}`, {
+    return this.http.get(`${this.getUserApiBaseUrl()}/user/id?id=${id}`, {
       headers: this.getHeaders()
     }).pipe(
       map((response: any) => ({
@@ -142,7 +158,7 @@ export class AdminService {
   }
 
   updateUser(userData: UpdateUserDto): Observable<UserDto> {
-    return this.http.put(`${this.USER_API_BASE_URL}/user`, userData, {
+    return this.http.put(`${this.getUserApiBaseUrl()}/user`, userData, {
       headers: this.getHeaders()
     }).pipe(
       map((response: any) => ({
@@ -156,7 +172,7 @@ export class AdminService {
   }
 
   deleteUser(userId: string): Observable<void> {
-    return this.http.delete(`${this.USER_API_BASE_URL}/user?userId=${userId}`, {
+    return this.http.delete(`${this.getUserApiBaseUrl()}/user?userId=${userId}`, {
       headers: this.getHeaders()
     }).pipe(
       map(() => void 0),
@@ -171,7 +187,7 @@ export class AdminService {
       permission: permission
     };
 
-    return this.http.put(`${this.USER_API_BASE_URL}/userauthorization/user-permissions`, authData, {
+    return this.http.put(`${this.getUserApiBaseUrl()}/userauthorization/user-permissions`, authData, {
       headers: this.getHeaders()
     }).pipe(
       timeout(10000), // 10 second timeout
@@ -190,7 +206,7 @@ export class AdminService {
 
   // Game Management Methods
   createGame(gameData: CreateGameDto): Observable<GameDto> {
-    return this.http.post(`${this.GAME_API_BASE_URL}/games`, gameData, {
+    return this.http.post(`${this.getGameApiBaseUrl()}/games`, gameData, {
       headers: this.getHeaders()
     }).pipe(
       timeout(10000), // 10 second timeout
@@ -208,7 +224,7 @@ export class AdminService {
   }
 
   getGames(): Observable<GameDto[]> {
-    return this.http.get(`${this.GAME_API_BASE_URL}/games`, {
+    return this.http.get(`${this.getGameApiBaseUrl()}/games`, {
       headers: this.getHeaders()
     }).pipe(
       timeout(10000), // 10 second timeout
@@ -229,7 +245,7 @@ export class AdminService {
   }
 
   getGameById(id: string): Observable<GameDto> {
-    return this.http.get(`${this.GAME_API_BASE_URL}/games/${id}`, {
+    return this.http.get(`${this.getGameApiBaseUrl()}/games/${id}`, {
       headers: this.getHeaders()
     }).pipe(
       map((response: any) => ({
@@ -246,7 +262,7 @@ export class AdminService {
   }
 
   updateGame(id: string, gameData: UpdateGameDto): Observable<void> {
-    return this.http.put(`${this.GAME_API_BASE_URL}/games/${id}`, gameData, {
+    return this.http.put(`${this.getGameApiBaseUrl()}/games/${id}`, gameData, {
       headers: this.getHeaders()
     }).pipe(
       map(() => void 0),
@@ -255,7 +271,7 @@ export class AdminService {
   }
 
   deleteGame(id: string): Observable<void> {
-    return this.http.delete(`${this.GAME_API_BASE_URL}/games/${id}`, {
+    return this.http.delete(`${this.getGameApiBaseUrl()}/games/${id}`, {
       headers: this.getHeaders()
     }).pipe(
       map(() => void 0),
